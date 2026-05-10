@@ -119,7 +119,7 @@ SECRET_KEY
 
 ![로그인](./image/화면8.png)
 
-KO · EN · JA 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대행사 / 관리자).
+KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대행사 / 관리자).
 
 ---
 
@@ -175,7 +175,8 @@ KO · EN · JA 다국어 지원. 역할 기반 접근 제어(브랜드 마케터
 
 ### 7. Audience & Inflow — 시청자 유형 분석
 
-![Audience Inflow](./image/화면6.png)
+![Audience Inflow 1](./image/화면5.png)
+![Audience Inflow 2](./image/화면6.png)
 
 - **시청자 페르소나**: Loyal 25.2% · Newbie 26.2% · None 48.6%
 - **댓글 유입 시점**: Early 74.9% (긍정 94.1%) · Expansion 18.2% · Steady 6.8%
@@ -211,43 +212,6 @@ KO · EN · JA 다국어 지원. 역할 기반 접근 제어(브랜드 마케터
 
 ---
 
-## 🛠 로컬 실행
-
-```bash
-git clone https://github.com/miyeon00/MS_FIVE_GIRLS.git
-cd MS_FIVE_GIRLS
-git checkout front
-
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-cp .env.example .env
-# .env에 DB_HOST, OPENAI_KEY 등 입력
-
-flask run
-```
-
-### 환경 변수 (`.env`)
-
-```env
-DB_HOST=fivegirls-db.postgres.database.azure.com
-DB_NAME=<데이터베이스명>
-DB_USER=azureuser
-DB_PASSWORD=<비밀번호>
-DB_PORT=5432
-
-OPENAI_ENDPOINT=https://<your-openai>.openai.azure.com/
-OPENAI_KEY=<API 키>
-OPENAI_GPT_MODEL=3dt-1st-team1-gpt
-OPENAI_EMBEDDINGS_DEPLOYMENT=3dt-1st-team1-text-embedding
-OPENAI_API_VERSION=2024-02-01
-
-SECRET_KEY=<Flask 시크릿 키>
-```
-
----
-
 ## 📦 기술 스택
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
@@ -259,3 +223,9 @@ SECRET_KEY=<Flask 시크릿 키>
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
 
 ---
+
+
+## 📄 라이선스
+
+본 프로젝트는 Microsoft AI School 프로그램의 교육 및 포트폴리오 목적으로 개발되었습니다.  
+수집된 데이터는 수집일로부터 6개월 후 자동으로 삭제됩니다.
