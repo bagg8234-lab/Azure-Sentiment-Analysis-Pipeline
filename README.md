@@ -1,4 +1,4 @@
-[🇰🇷 한국어](./README_KO.md) | [🇺🇸 English](./README_EN.md)
+[🇰🇷 한국어](./README.md) | [🇺🇸 English](./README_EN.md)
 
 # 🎯 Pickly — Ad Intelligence Platform
 
