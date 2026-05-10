@@ -10,7 +10,7 @@
 ## 📌 프로젝트 개요
 
 **Pickly**는 인플루언서(유튜버 협찬) 캠페인을 운영하는 브랜드 마케터와 마케팅 대행사를 위한 클라우드 네이티브 B2B SaaS 플랫폼입니다.  
-유튜브 댓글과 플랫폼 리뷰(네이버쇼핑, 올리브영)를 자동 수집하고, Azure OpenAI(GPT-4o-mini + text-embedding-3-large)를 활용한 감성 분석을 통해 실시간 캠페인 성과 대시보드를 제공합니다.
+유튜브 댓글과 플랫폼 리뷰(네이버쇼핑, 올리브영)를 자동 수집하고, KcELECTRA 기반 감성 분석과 Azure OpenAI(GPT-4o-mini)를 활용한 인사이트 요약을 통해 실시간 캠페인 성과 대시보드를 제공합니다.
 
 ---
 
@@ -19,25 +19,25 @@
 **데이터 흐름**
 
 ```
-YouTube API  →  run_collect() + run_processing()  →  PostgreSQL
-                (6시간마다 Timer Trigger)
-
-네이버쇼핑/올리브영 크롤링  →  PostgreSQL
-                (12시간마다 Timer Trigger, 50~150건)
-
-PostgreSQL  ↔  Azure OpenAI (감성 분석)
-PostgreSQL  →  Flask 대시보드
+youtube_collect.py / naver_collect.py / oliveyoung_collect.py
+        ↓ (Azure Functions · Timer Trigger)
+   PostgreSQL (Raw Data)
+        ↓ (comment-analyzer · Azure Functions)
+   PostgreSQL (감성 분석)
+        ↓
+   app.py (Flask)
 ```
 
 | 단계 | 구성 요소 | 상세 |
 |------|-----------|------|
-| 수집 | Azure Functions (`youtube-comments`) | `run_collect()` + `run_processing()` · 6시간마다 Timer Trigger |
-| 수집 | Azure Functions (`platform-review-function-0309`) | 네이버쇼핑 / 올리브영 크롤링 · 12시간마다 · 50~150건 |
-| AI 분석 | Azure Functions (`comment-analyzer`) | GPT-4o-mini 감성 분석 + 구매 의도 + 위기 감지 |
-| 알림 | Azure Functions (`alert-func-v2`) | 위기 댓글 감지 시 실시간 알림 |
-| 저장 | Azure Database for PostgreSQL (`fivegirls-db`) | 3-레이어 스키마 (수집 / 분석 / 집계) |
-| 시각화 | Flask App Service (`pickly-dashboard`) | KPI · VOC · Sentiment Trend · AI 어시스턴트 |
-| CI/CD | GitHub Actions | `front` 브랜치 push 시 자동 빌드 및 배포 |
+| 수집 | `youtube_collect.py` | YouTube Data API 댓글 수집 · 6시간마다 Timer Trigger |
+| 처리 | `youtube_processing.py` | 수집 데이터 전처리 · PostgreSQL 적재 |
+| 수집 | `naver_collect.py` · `oliveyoung_collect.py` | 네이버쇼핑 / 올리브영 크롤링 · 12시간마다 · 50~150건 |
+| 처리 | `platform_processing.py` | 플랫폼 리뷰 전처리 · PostgreSQL 적재 |
+| AI 분석 | `comment-analyzer` (Azure Functions) | KcELECTRA 감성 분석 · 구매 의도 · 위기 감지 |
+| 알림 | `alert-func-v2` (Azure Functions) | 위기 댓글 감지 시 실시간 알림 |
+| 시각화 | `app.py` (Flask) | 웹 대시보드 · GPT-4o-mini 기반 인사이트 요약 · 음성 안내 · Korea Central |
+| CI/CD | GitHub Actions | `front` 브랜치 push 시 자동 배포 |
 
 ---
 
@@ -60,10 +60,6 @@ PostgreSQL  →  Flask 대시보드
 ---
 
 ## ☁️ Azure 리소스 구성
-
-### 리소스 그룹 전체 현황 (`3dt-1st-team1`)
-
-![리소스 그룹](./image/리소스그룹.png)
 
 ### Azure OpenAI 모델 배포
 
@@ -193,25 +189,6 @@ KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대
 
 
 
-## 💰 비용 분석 (2026년 3월)
-
-![비용 분석](./image/260310104300_비용.png)
-
-| 서비스 | 비용 (KRW) |
-|--------|-----------|
-| Event Hubs (`eh-comment`) | ₩48,443 |
-| Azure Database for PostgreSQL | ₩22,368 |
-| Stream Analytics | ₩3,819 |
-| Functions | ₩585 |
-| Storage | ₩75 |
-| **실제 누적 비용** | **₩79,757** |
-| 예상 비용 (3월 말) | ₩217,100 |
-| 분기 예산 | ₩400,000 |
-
-> ⚠️ Event Hubs가 전체의 약 60%를 차지합니다. 소비 기반 티어 전환 또는 보존 기간 단축으로 최적화 가능.
-
----
-
 ## 📦 기술 스택
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
@@ -224,6 +201,11 @@ KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대
 
 ---
 
+## 👥 팀
+
+**3DT-1st-Team1** | 충남대학교 산학협력단 · Microsoft AI School
+
+---
 
 ## 📄 라이선스
 
