@@ -9,8 +9,14 @@
 
 ## 📌 프로젝트 개요
 
-**Pickly**는 인플루언서(유튜버 협찬) 캠페인을 운영하는 브랜드 마케터와 마케팅 대행사를 위한 클라우드 네이티브 B2B SaaS 플랫폼입니다.  
-유튜브 댓글과 플랫폼 리뷰(네이버쇼핑, 올리브영)를 자동 수집하고, KcELECTRA 기반 감성 분석과 Azure OpenAI(GPT-4o-mini)를 활용한 인사이트 요약을 통해 실시간 캠페인 성과 대시보드를 제공합니다.
+**Pickly**는 인플루언서(유튜버 협찬) 캠페인을 운영하는 브랜드 마케터와 마케팅 대행사를 위한 클라우드 네이티브 B2B SaaS 플랫폼입니다.
+
+수만 건의 유튜브 댓글과 쇼핑몰 리뷰 속에 숨겨진 실제 구매 의도와 브랜드 위기 신호를 AI로 자동 포착하여 마케터의 의사결정을 지원합니다.
+
+- **KcELECTRA**: 한국어 구어체·신조어에 특화된 모델로 수만 건의 댓글을 감성 분류(긍/부정/위기)
+- **GPT-4o-mini**: 분류된 데이터를 바탕으로 실행 가능한 인사이트 요약 및 RAG 기반 챗봇 대응
+
+> 비용 효율성과 속도가 중요한 단순 감성 분류는 KcELECTRA를, 복잡한 맥락 파악과 인사이트 도출은 GPT-4o-mini를 활용하는 하이브리드 AI 구조입니다.
 
 ---
 
@@ -22,10 +28,12 @@
 youtube_collect.py / naver_collect.py / oliveyoung_collect.py
         ↓ (Azure Functions · Timer Trigger)
    PostgreSQL (Raw Data)
-        ↓ (comment-analyzer · Azure Functions)
+        ↓ (comment-analyzer · Azure Functions · KcELECTRA)
    PostgreSQL (감성 분석)
+        ↓ (Stream Analytics · 위기/바이럴 감지)
+   alert-func-v2 → 실시간 알림
         ↓
-   app.py (Flask)
+   app.py (Flask · GPT-4o-mini)
 ```
 
 | 단계 | 구성 요소 | 상세 |
@@ -34,10 +42,21 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 | 처리 | `youtube_processing.py` | 수집 데이터 전처리 · PostgreSQL 적재 |
 | 수집 | `naver_collect.py` · `oliveyoung_collect.py` | 네이버쇼핑 / 올리브영 크롤링 · 12시간마다 · 50~150건 |
 | 처리 | `platform_processing.py` | 플랫폼 리뷰 전처리 · PostgreSQL 적재 |
-| AI 분석 | `comment-analyzer` (Azure Functions) | KcELECTRA 감성 분석 · 구매 의도 · 위기 감지 |
-| 알림 | `alert-func-v2` (Azure Functions) | 위기 댓글 감지 시 실시간 알림 |
-| 시각화 | `app.py` (Flask) | 웹 대시보드 · GPT-4o-mini 기반 인사이트 요약 · 음성 안내 · Korea Central |
+| AI 분석 | `comment-analyzer` (Azure Functions) | KcELECTRA 감성 분류 · 구매 의도 · 위기 플래그 |
+| 실시간 감지 | Stream Analytics (`comments-asa-job`) | 위기 댓글 급증 · 바이럴 급상승 감지 |
+| 알림 | `alert-func-v2` (Azure Functions) | 위기/바이럴 조건 충족 시 웹훅 알림 |
+| 시각화 | `app.py` (Flask) | 웹 대시보드 · GPT-4o-mini 인사이트 요약 · 음성 안내 |
 | CI/CD | GitHub Actions | `front` 브랜치 push 시 자동 배포 |
+
+### 🚨 실시간 감지 로직 (Stream Analytics)
+
+**위기 감지 (CRISIS_ALERT)**
+
+`HoppingWindow(hour, 24, 6)` — 중첩된 시간 범위를 분석하여 지속적인 위기 흐름을 추적하기 위해 활용. 24시간 데이터를 6시간마다 검사하여, 부정(`NEGATIVE`) + 위기 플래그(`crisis_flag = true`) 댓글이 10개 이상이면 즉시 웹훅 알림을 발송합니다. 여론이 급격히 악화되는 상황을 골든타임 내에 포착합니다.
+
+**바이럴 급상승 감지 (VIRAL_SPIKE)**
+
+`TumblingWindow` — 고정된 시간 간격의 데이터를 독립적으로 비교하여 급격한 수치 변화를 측정하기 위해 활용. 2개의 윈도우를 조인하여 이전 6시간 대비 현재 6시간 댓글 수가 **3배 초과(300%)** 시 알림을 발송합니다. 바이럴 시점을 정확히 감지하여 추가 프로모션 타이밍을 포착합니다.
 
 ---
 
@@ -60,6 +79,10 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 ---
 
 ## ☁️ Azure 리소스 구성
+
+### 리소스 그룹 전체 현황 (`3dt-1st-team1`)
+
+![리소스 그룹](./image/리소스그룹.png)
 
 ### Azure OpenAI 모델 배포
 
@@ -99,13 +122,6 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 ### 환경 변수
 
 ![환경 변수](./image/웹앱_3.png)
-
-```
-DB_HOST / DB_NAME / DB_PASSWORD / DB_PORT / DB_USER
-OPENAI_API_VERSION / OPENAI_EMBEDDINGS_DEPLOYMENT
-OPENAI_ENDPOINT / OPENAI_GPT_MODEL / OPENAI_KEY
-SECRET_KEY
-```
 
 ---
 
@@ -187,8 +203,6 @@ KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대
 
 ---
 
-
-
 ## 📦 기술 스택
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
@@ -198,16 +212,3 @@ KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대
 ![Azure Functions](https://img.shields.io/badge/Azure%20Functions-0062AD?style=flat-square&logo=azurefunctions&logoColor=white)
 ![OpenAI](https://img.shields.io/badge/Azure%20OpenAI-412991?style=flat-square&logo=openai&logoColor=white)
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white)
-
----
-
-## 👥 팀
-
-**3DT-1st-Team1** | 충남대학교 산학협력단 · Microsoft AI School
-
----
-
-## 📄 라이선스
-
-본 프로젝트는 Microsoft AI School 프로그램의 교육 및 포트폴리오 목적으로 개발되었습니다.  
-수집된 데이터는 수집일로부터 6개월 후 자동으로 삭제됩니다.
