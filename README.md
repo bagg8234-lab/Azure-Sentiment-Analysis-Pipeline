@@ -42,7 +42,7 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 | 처리 | `youtube_processing.py` | 수집 데이터 전처리 · PostgreSQL 적재 |
 | 수집 | `naver_collect.py` · `oliveyoung_collect.py` | 네이버쇼핑 / 올리브영 크롤링 · 12시간마다 · 50~150건 |
 | 처리 | `platform_processing.py` | 플랫폼 리뷰 전처리 · PostgreSQL 적재 |
-| AI 분석 | `comment-analyzer` (Azure Functions) | KcELECTRA 감성 분류 · 구매 의도 · 위기 플래그 |
+| 감정 분석 | `comment-analyzer` (Azure Functions) | KcELECTRA 감성 분류 · 구매 의도 · 위기 플래그 |
 | 실시간 감지 | Stream Analytics (`comments-asa-job`) | 위기 댓글 급증 · 바이럴 급상승 감지 |
 | 알림 | `alert-func-v2` (Azure Functions) | 위기/바이럴 조건 충족 시 웹훅 알림 |
 | 시각화 | `app.py` (Flask) | 웹 대시보드 · GPT-4o-mini 인사이트 요약 · 음성 안내 |
