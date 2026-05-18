@@ -129,6 +129,7 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 
 ### 1. 로그인 / 회원가입
 
+![회원가입](./image/화면7.png)
 ![로그인](./image/화면8.png)
 
 KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대행사 / 관리자).
@@ -197,7 +198,7 @@ KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대
 
 ### 8. Total Comments — 전체 댓글
 
-![Total Comments](./image/화면7.png)
+![Total Comments](./image/화면6.png)
 
 전체 댓글 목록을 긍정/부정/위기/A·B 테스트 필터로 조회합니다. 댓글별 감성 라벨·위기도·유입 시점이 표시됩니다.
 
