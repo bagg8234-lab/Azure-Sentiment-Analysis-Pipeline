@@ -1,23 +1,25 @@
-# YouTube 댓글 수집
+# 기본 및 환경 설정
+python-dotenv==1.0.1
+
+#  데이터베이스 연결
+psycopg2-binary==2.9.9
+
+# 웹 크롤링 및 수집
 google-api-python-client
-
-# DB 연결
-psycopg2-binary
-
-# 환경 변수
-python-dotenv
-
-# 전처리
-kiwipiepy
-langdetect
-
-# 웹 크롤링 
 selenium
 webdriver-manager
 
+# 텍스트 전처리 및 언어 감지
+kiwipiepy
+langdetect
+
+# AI 모델 및 데이터 분석] 
+transformers
+torch
+pandas
+numpy
+
+# 웹 서버 및 클라우드 배포
 flask==3.0.3
 gunicorn==21.2.0
-psycopg2-binary==2.9.9
-python-dotenv==1.0.1
-
 azure-functions
