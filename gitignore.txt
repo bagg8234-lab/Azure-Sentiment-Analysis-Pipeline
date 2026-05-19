@@ -1,0 +1,45 @@
+# ── 환경 설정 및 민감 정보 ────────────────────────────────────
+.env
+local.settings.json
+azure_functions/local.settings.json
+__azurite_db_*
+
+# ── 가상환경 및 종속성 ───────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+bin/
+lib/
+include/
+
+# ── AI/ML 모델 및 대용량 데이터 ──────────────────────────────
+# 모델 파일은 용량이 커서 보통 Git에 올리지 않고 별도 저장소(LFS)나 클라우드를 씁니다.
+model_cache/
+*.safetensors
+*.bin
+*.pt
+*.h5
+*.pkl
+
+# ── Python 캐시 및 빌드 결과물 ──────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ── 도구 및 세션 데이터 (Claude, VS Code 등) ─────────────────
+.claude/
+.claude-code/
+
+# 파이썬 캐시 폴더 및 파일 무시
+__pycache__/
+*.pyc
+
+# Azure Functions 로컬 설정
+local.settings.json
+host.json
+
+function_app.py

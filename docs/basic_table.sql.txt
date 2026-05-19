@@ -1,0 +1,215 @@
+-- ═══════════════════════════════════════════════════════════════════
+-- DDL — project schema
+-- ═══════════════════════════════════════════════════════════════════
+
+-- 1️⃣ 스키마 생성
+CREATE SCHEMA IF NOT EXISTS project;
+
+-- 2️⃣ 상품 정보
+CREATE TABLE project.products (
+    product_id SERIAL PRIMARY KEY,
+    product_name VARCHAR(200) NOT NULL,
+    brand_name VARCHAR(200)
+);
+
+-- 3️⃣ 영상 정보
+CREATE TABLE project.videos (
+    video_id VARCHAR(50) PRIMARY KEY,
+    title TEXT,
+    channel_name TEXT,
+    channel_id VARCHAR(50),
+    published_at TIMESTAMP,
+    description TEXT,
+    view_count INT,
+    like_count INT,
+    comment_count INT,
+    url TEXT,
+    collected_at TIMESTAMP,
+    product_id INT REFERENCES project.products(product_id),
+    is_sponsored BOOLEAN DEFAULT FALSE
+);
+
+-- 4️⃣ 영상 댓글 요약
+CREATE TABLE project.video_summary (
+    video_id VARCHAR(50) PRIMARY KEY REFERENCES project.videos(video_id),
+    total_comment_threads INT,
+    total_replies INT,
+    total_all INT
+);
+
+-- 5️⃣ 댓글 (대댓글 포함)
+CREATE TABLE project.comments (
+    comment_id VARCHAR(50) PRIMARY KEY,
+    video_id VARCHAR(50) REFERENCES project.videos(video_id),
+    parent_id VARCHAR(50),
+    author_name TEXT,
+    author_channel_id VARCHAR(50),
+    text TEXT,
+    likes INT,
+    published_at TIMESTAMP,
+    updated_at TIMESTAMP
+);
+
+-- 6️⃣ 댓글 전처리
+CREATE TABLE project.comment_cleansed (
+    comment_id VARCHAR(50) PRIMARY KEY REFERENCES project.comments(comment_id),
+    original_text TEXT,
+    cleaned_text TEXT,
+    normalized_text TEXT,
+    tokens TEXT,
+    nouns TEXT,
+    keywords TEXT,
+    spam_score INT,
+    spam_level VARCHAR(20) CHECK (spam_level IN ('정상','의심','스팸')),
+    is_empty BOOLEAN DEFAULT FALSE,
+    language VARCHAR(20),
+    mentioned_brands TEXT,
+    cleansed_at TIMESTAMP
+);
+
+-- 7️⃣ 댓글 분석
+CREATE TABLE project.comments_analysis (
+    comment_id            VARCHAR(50) PRIMARY KEY REFERENCES project.comments(comment_id),
+    sentiment_score       FLOAT,
+    sentiment_label       VARCHAR(20),
+    weighted_sentiment    FLOAT,
+    is_brand_mention      BOOLEAN,
+    is_purchase_intent    BOOLEAN,
+    purchase_intent_level INT,
+    crisis_flag           BOOLEAN,
+    sentiment_pos         FLOAT,
+    sentiment_neg         FLOAT,
+    attribute_tags        TEXT,
+    analyzed_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    purchase_intent_label VARCHAR(10),
+    intent_confidence     FLOAT,
+    audience_segment      VARCHAR(20),
+    inflow_segment        VARCHAR(20)
+);
+
+-- 8️⃣ 플랫폼 리뷰 테이블
+CREATE TABLE project.platform_reviews (
+    review_id VARCHAR(100) PRIMARY KEY,
+    platform VARCHAR(30) NOT NULL,
+    product_id INT NOT NULL REFERENCES project.products(product_id),
+    rating FLOAT,
+    review_text TEXT,
+    reviewer_name TEXT,
+    purchase_yn BOOLEAN,
+    helpful_count INT DEFAULT 0,
+    review_date TIMESTAMP,
+    collected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9️⃣ 플랫폼 리뷰 전처리
+CREATE TABLE project.platform_review_cleansed (
+    review_id VARCHAR(100) PRIMARY KEY,
+    original_text TEXT,
+    cleaned_text TEXT,
+    normalized_text TEXT,
+    tokens TEXT,
+    nouns TEXT,
+    keywords TEXT,
+    spam_score INT,
+    spam_level VARCHAR(20) CHECK (spam_level IN ('정상','의심','스팸')),
+    is_empty BOOLEAN DEFAULT FALSE,
+    language VARCHAR(20),
+    mentioned_brands TEXT,
+    cleansed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_review_cleansing
+        FOREIGN KEY (review_id)
+        REFERENCES project.platform_reviews(review_id)
+        ON DELETE CASCADE
+);
+
+-- 🔟 플랫폼 리뷰 감성 분석
+CREATE TABLE project.platform_reviews_analysis (
+    -- review_id에 기본키(PK)와 외래키(FK) 조건을 한 줄에 묶어서 선언합니다.
+    review_id VARCHAR(100) PRIMARY KEY REFERENCES project.platform_reviews(review_id) ON DELETE CASCADE,
+    sentiment_score FLOAT,
+    sentiment_label VARCHAR(20),
+    crisis_flag BOOLEAN DEFAULT FALSE,
+    attribute_tags        TEXT,
+    sentiment_pos         FLOAT,
+    sentiment_neg         FLOAT,
+    analyzed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- 11 협업 성공 지수 뷰
+CREATE OR REPLACE VIEW project.dashboard_total_score AS
+WITH CommentValues AS (
+    SELECT 
+        v.video_id,
+        v.title,
+        v.view_count,
+        vs.total_all AS total_comments,
+        ca.comment_id,
+        -- 베이스 점수에 가중치를 곱하는 방식
+        (
+            ca.sentiment_pos 
+            * (CASE 
+                WHEN ca.purchase_intent_level = 3 THEN 2.0
+                WHEN ca.purchase_intent_level = 2 THEN 1.5
+                WHEN ca.purchase_intent_level = 1 THEN 1.2
+                ELSE 1.0 -- 의도가 없어도 기본 점수는 유지!
+             END)
+             * (CASE WHEN ca.is_brand_mention = TRUE THEN 1.5 ELSE 1.0 END)
+             * (CASE WHEN ca.audience_segment = 'Newbie' THEN 1.2 ELSE 1.0 END)
+        ) - (CASE WHEN ca.crisis_flag = TRUE THEN 2.0 ELSE 0.0 END) AS comment_value
+    FROM project.videos v
+    JOIN project.video_summary vs ON v.video_id = vs.video_id
+    JOIN project.comments c ON v.video_id = c.video_id
+    JOIN project.comments_analysis ca ON c.comment_id = ca.comment_id
+),
+ScoreAggregated AS (
+    SELECT 
+        video_id,
+        title,
+        view_count,
+        total_comments,
+        
+        -- ① 질적 밀도: 현실적인 목표치(1.2)를 기준으로 100점 환산
+        (SUM(comment_value) / (COUNT(comment_id) * 1.2)) * 100.0 AS raw_score_quality,
+        
+        -- ② 양적 파급력
+        (
+            (LOG(COALESCE(view_count, 0) + 1.0) / LOG(500000.0)) * 100.0
+        ) * 0.5 
+        + 
+        (
+            (LOG(COALESCE(total_comments, 0) + 1.0) / LOG(5000.0)) * 100.0
+        ) * 0.5 AS raw_score_scale
+        
+    FROM CommentValues
+    GROUP BY video_id, title, view_count, total_comments
+),
+FinalScores AS (
+    SELECT
+        video_id,
+        title,
+        view_count,
+        total_comments,
+        -- 100점 초과 및 마이너스 방지 안전장치
+        CASE 
+            WHEN raw_score_quality < 0 THEN 0.0 
+            WHEN raw_score_quality > 100 THEN 100.0 
+            ELSE raw_score_quality 
+        END AS safe_quality,
+        CASE 
+            WHEN raw_score_scale < 0 THEN 0.0 
+            WHEN raw_score_scale > 100 THEN 100.0 
+            ELSE raw_score_scale 
+        END AS safe_scale
+    FROM ScoreAggregated
+)
+SELECT 
+    video_id,
+    title,
+    view_count,
+    total_comments,
+    ROUND(safe_quality::NUMERIC, 1) AS quality_score,
+    ROUND(safe_scale::NUMERIC, 1) AS scale_score,
+    ROUND((safe_quality * 0.6 + safe_scale * 0.4)::NUMERIC, 1) AS total_score
+FROM FinalScores
+ORDER BY total_score DESC;
