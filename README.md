@@ -53,29 +53,30 @@ youtube_collect.py / naver_collect.py / oliveyoung_collect.py
 
 ### ① 수집 레이어 | Raw Data
 
-![수집 레이어](./image/수집레이어.png)
-
-- `comments` — YouTube 댓글·대댓글 원본 (작성자명 SHA-256 비식별화)
-- `videos` — 협찬 영상 메타데이터 (조회수·좋아요·댓글수 UPSERT)
-- `products` — 제품/브랜드 정보
-- `platform_reviews` — 올리브영/네이버쇼핑 리뷰 원본
+| 테이블 | 주요 컬럼 |
+|--------|----------|
+| `comments` | comment_id (PK), video_id (FK), author_name, text, likes, published_at — 작성자명 SHA-256 비식별화 |
+| `videos` | video_id (PK), product_id (FK), title, channel_name, view_count, is_sponsored — 조회수·좋아요 UPSERT |
+| `products` | product_id (PK), product_name, brand_name |
+| `platform_reviews` | review_id (PK), product_id (FK), rating, review_text, platform, collected_at |
 
 ### ② 분석 레이어 | Cleansing & Sentiment
 
-![분석 레이어](./image/분석레이어.png)
-
-- `comment_cleansed` — 정제 텍스트, 키워드, 스팸 점수
-- `comments_analysis` — 감성 점수/라벨, 구매 의도, 위기 플래그, 시청자 세그먼트
-- `platform_reviews_analysis` — 리뷰 감성 분석, 속성 태그
-- `users` — Flask 인증용 사용자 테이블
+| 테이블 | 주요 컬럼 |
+|--------|----------|
+| `comment_cleansed` | comment_id (FK), cleaned_text, tokens, keywords, nouns, spam_score, spam_level |
+| `platform_reviews_cleansed` | review_id (FK), cleaned_text, tokens, keywords, spam_score, spam_level |
+| `comments_analysis` | comment_id (FK), sentiment_score, label, is_purchase_intent, crisis_flag, audience_segment, inflow_segment |
+| `platform_reviews_analysis` | review_id (FK), sentiment_score, label, crisis_flag, attribute_tags |
+| `users` | id (PK), email, password_hash, name, company, role, is_active |
 
 ### ③ 집계 레이어 | Metrics & Output
 
-![집계 레이어](./image/집계레이어.png)
-
-- `video_metrics` — 영상별 긍/부정 비율, 구매의도 비율, 위기 점수
-- `product_metrics` — 제품별 통합 감성 등급
-- `reports` — PDF 리포트 생성 이력
+| 테이블 | 주요 컬럼 |
+|--------|----------|
+| `video_metrics` | video_id (FK), positive_ratio, negative_ratio, purchase_intent_ratio, crisis_score, engagement_rate |
+| `product_metrics` | product_id (FK), total_videos, total_comments, overall_sentiment, grade, overall_purchase_ratio |
+| `reports` | report_id (PK), product_id (FK), overall_score, report_path, generated_at |
 
 ---
 
@@ -201,7 +202,7 @@ YOUTUBE_API_KEY / MASK_SALT / SECRET_KEY
 
 ![로그인](./image/화면8.png)
 
-KO · EN · JA 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대행사 / 관리자).
+KO · EN 다국어 지원. 역할 기반 접근 제어(브랜드 마케터 / 대행사 / 관리자).
 
 ---
 
@@ -330,3 +331,10 @@ SECRET_KEY=<Flask 시크릿 키>
 데이터 수집 파이프라인 (YouTube Data API · 올리브영 · 네이버쇼핑 크롤링) ·  
 댓글/리뷰 전처리 (스팸 필터링 · 형태소 분석 · DB 적재) ·  
 Flask 웹 대시보드 (KPI · VOC · Sentiment Trend · AI 어시스턴트 UI)
+
+---
+
+## 📄 라이선스
+
+본 프로젝트는 Microsoft AI School 프로그램의 교육 및 포트폴리오 목적으로 개발되었습니다.  
+수집된 데이터는 수집일로부터 6개월 후 자동으로 삭제됩니다.
