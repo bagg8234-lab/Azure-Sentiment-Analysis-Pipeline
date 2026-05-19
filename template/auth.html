@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pickly — 시작하기</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── 변수 ─── */
+:root {
+  --dark:   #0f1120;
+  --dark2:  #1a1c2e;
+  --dark3:  #242740;
+  --ac:     #6c63f6;
+  --ac2:    #9b95f8;
+  --ac3:    rgba(108,99,246,.15);
+  --ac4:    rgba(108,99,246,.3);
+  --white:  #ffffff;
+  --off:    #f4f5fb;
+  --tx:     #1e2035;
+  --t2:     #5a5e7a;
+  --t3:     #9498b5;
+  --t4:     #c8cce0;
+  --t5:     #e8eaf4;
+  --green:  #10b981;
+  --red:    #ef4444;
+  --radius: 14px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Pretendard', 'Plus Jakarta Sans', sans-serif;
+  background: var(--dark);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════
+   LEFT — 브랜드 패널
+════════════════════════════════ */
+.brand-panel {
+  background: var(--dark2);
+  display: flex;
+  flex-direction: column;
+  padding: 52px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 배경 장식 */
+.bp-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.bp-orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(108,99,246,.22) 0%, transparent 65%);
+  top: -120px; left: -120px;
+}
+.bp-orb-2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, rgba(59,130,246,.14) 0%, transparent 65%);
+  bottom: -60px; right: -60px;
+}
+.bp-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* 로고 */
+.bp-logo {
+  display: flex; align-items: center; gap: 12px;
+  position: relative; z-index: 1;
+}
+.bp-logo-mark {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--ac), var(--ac2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 800; color: #fff;
+  box-shadow: 0 4px 20px rgba(108,99,246,.5);
+  flex-shrink: 0;
+}
+.bp-logo-text { line-height: 1; }
+.bp-logo-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: #fff; }
+.bp-logo-sub  { font-size: 10px; color: rgba(255,255,255,.28); letter-spacing: .1em; margin-top: 2px; }
+
+/* 언어 스위처 */
+.lang-bar {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 20px;
+  position: relative; z-index: 1;
+}
+.lang-btn {
+  padding: 5px 11px; border-radius: 7px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: transparent; cursor: pointer;
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,.3);
+  font-family: 'Pretendard', sans-serif;
+  transition: all .15s; letter-spacing: .02em;
+}
+.lang-btn:hover { color: rgba(255,255,255,.6); border-color: rgba(255,255,255,.2); }
+.lang-btn.on {
+  background: var(--ac3); border-color: var(--ac4);
+  color: var(--ac2);
+}
+
+/* 히어로 */
+.bp-hero {
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+  position: relative; z-index: 1;
+  padding: 40px 0 20px;
+}
+.bp-eyebrow {
+  font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--ac2); font-weight: 700; margin-bottom: 18px;
+  display: flex; align-items: center; gap: 8px;
+}
+.bp-eyebrow::before {
+  content: ''; width: 20px; height: 1.5px;
+  background: var(--ac2); border-radius: 2px;
+}
+.bp-headline {
+  font-family: 'Syne', sans-serif;
+  font-size: 38px; font-weight: 800; color: #fff;
+  line-height: 1.15; letter-spacing: -.02em;
+  margin-bottom: 20px;
+}
+.bp-headline em {
+  font-style: normal;
+  background: linear-gradient(100deg, var(--ac2) 0%, #c4b5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.bp-desc {
+  font-size: 14px; color: rgba(255,255,255,.42); line-height: 1.75;
+  margin-bottom: 44px; font-weight: 500; max-width: 340px;
+}
+
+/* 피처 카드들 */
+.bp-features { display: flex; flex-direction: column; gap: 12px; }
+.bp-feat {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; border-radius: 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  transition: background .15s;
+}
+.bp-feat:hover { background: rgba(255,255,255,.07); }
+.bp-feat-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 17px;
+  background: rgba(108,99,246,.18);
+}
+.bp-feat-title { font-size: 13px; font-weight: 700; color: rgba(255,255,255,.8); }
+.bp-feat-sub   { font-size: 11.5px; color: rgba(255,255,255,.32); margin-top: 2px; }
+
+/* 하단 */
+.bp-footer {
+  position: relative; z-index: 1;
+  font-size: 11px; color: rgba(255,255,255,.18);
+  letter-spacing: .04em;
+}
+
+/* ════════════════════════════════
+   RIGHT — 폼 패널
+════════════════════════════════ */
+.form-panel {
+  background: var(--off);
+  display: flex; align-items: center; justify-content: center;
+  padding: 40px 32px;
+  position: relative;
+}
+
+.form-card {
+  width: 100%; max-width: 420px;
+  background: var(--white);
+  border-radius: 20px;
+  padding: 40px 40px 36px;
+  box-shadow:
+    0 0 0 1px var(--t5),
+    0 8px 32px rgba(30,32,53,.09),
+    0 2px 6px rgba(30,32,53,.05);
+  animation: slideUp .4s cubic-bezier(.22,.9,.36,1) both;
+}
+
+/* 탭 */
+.tabs {
+  display: flex; gap: 3px;
+  background: var(--t5); border-radius: 11px; padding: 3px;
+  margin-bottom: 32px;
+}
+.tab {
+  flex: 1; padding: 9px 0; border: none; border-radius: 9px;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+  background: transparent; color: var(--t3);
+  transition: all .18s;
+}
+.tab.on {
+  background: var(--white); color: var(--tx);
+  box-shadow: 0 1px 4px rgba(0,0,0,.09), 0 0 0 1px var(--t5);
+}
+
+/* 폼 섹션 */
+.form-section { display: none; }
+.form-section.on { display: block; animation: fadeUp .25s ease both; }
+
+.form-head    { margin-bottom: 26px; }
+.form-title   { font-family: 'Syne', sans-serif; font-size: 21px; font-weight: 800; color: var(--tx); margin-bottom: 5px; }
+.form-sub     { font-size: 13px; color: var(--t3); font-weight: 500; }
+
+/* 필드 */
+.field { margin-bottom: 14px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-row .field { margin-bottom: 0; }
+
+label {
+  display: block; font-size: 11.5px; font-weight: 700;
+  color: var(--t2); margin-bottom: 6px; letter-spacing: .04em;
+}
+.input-wrap { position: relative; }
+.input-ico {
+  position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+  font-size: 14px; color: var(--t4); pointer-events: none;
+  transition: color .15s;
+}
+input, select {
+  width: 100%; height: 44px;
+  padding: 0 13px 0 40px;
+  border: 1.5px solid var(--t5); border-radius: 10px;
+  font-size: 13.5px; font-weight: 500; color: var(--tx);
+  font-family: 'Pretendard', sans-serif;
+  background: var(--off); outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  appearance: none;
+}
+input::placeholder { color: var(--t4); font-weight: 400; }
+input:focus, select:focus {
+  border-color: var(--ac4); background: var(--white);
+  box-shadow: 0 0 0 3px rgba(108,99,246,.1);
+}
+input:focus + .input-ico, .input-wrap:focus-within .input-ico { color: var(--ac); }
+input.err { border-color: #fca5a5; box-shadow: 0 0 0 3px rgba(239,68,68,.08); }
+
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: '▾'; position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+  color: var(--t3); font-size: 12px; pointer-events: none;
+}
+
+/* 비밀번호 토글 */
+.pwd-eye {
+  position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  color: var(--t4); font-size: 15px; padding: 3px;
+  transition: color .15s;
+}
+.pwd-eye:hover { color: var(--t2); }
+input.has-eye { padding-right: 40px; }
+
+/* 에러 텍스트 */
+.err-msg {
+  font-size: 11px; color: var(--red); font-weight: 600;
+  margin-top: 5px; display: none;
+}
+
+/* 비밀번호 강도 */
+.pwd-meter { margin-top: 7px; display: none; }
+.pwd-bars  { display: flex; gap: 3px; margin-bottom: 4px; }
+.pwd-bar   { flex: 1; height: 3px; border-radius: 3px; background: var(--t5); transition: background .25s; }
+.pwd-bar.w { background: #f87171; }
+.pwd-bar.m { background: #fb923c; }
+.pwd-bar.s { background: var(--green); }
+.pwd-meter-label { font-size: 10.5px; font-weight: 700; color: var(--t3); }
+
+/* 체크박스 행 */
+.check-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: 4px 0 20px;
+}
+.check-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12.5px; color: var(--t2); font-weight: 500; cursor: pointer;
+}
+input[type="checkbox"] {
+  width: 15px; height: 15px; padding: 0;
+  accent-color: var(--ac); cursor: pointer;
+  border-radius: 4px; flex-shrink: 0;
+}
+.link { color: var(--ac); text-decoration: none; font-weight: 700; font-size: 12.5px; }
+.link:hover { text-decoration: underline; }
+
+/* 약관 */
+.terms-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin: 4px 0 20px;
+}
+.terms-row input[type="checkbox"] { margin-top: 1px; }
+.terms-txt { font-size: 11.5px; color: var(--t3); line-height: 1.6; }
+.terms-txt a { color: var(--ac); font-weight: 700; text-decoration: none; }
+
+/* 제출 버튼 */
+.btn-submit {
+  width: 100%; height: 46px;
+  background: linear-gradient(130deg, var(--ac) 0%, #8b83f7 100%);
+  color: #fff; border: none; border-radius: 11px;
+  font-size: 14px; font-weight: 800;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer; position: relative; overflow: hidden;
+  box-shadow: 0 4px 18px rgba(108,99,246,.38);
+  transition: transform .15s, box-shadow .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(108,99,246,.45); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(rgba(255,255,255,.12), transparent);
+}
+
+.spinner {
+  width: 15px; height: 15px;
+  border: 2px solid rgba(255,255,255,.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin .65s linear infinite; display: none;
+}
+
+/* 성공 화면 */
+.success-box {
+  display: none; text-align: center; padding: 12px 0;
+  animation: fadeUp .35s ease both;
+}
+.success-ring {
+  width: 66px; height: 66px; border-radius: 50%; margin: 0 auto 18px;
+  background: linear-gradient(135deg, #d1fae5, #6ee7b7);
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+  border: 2px solid rgba(16,185,129,.3); box-shadow: 0 4px 18px rgba(16,185,129,.22);
+}
+.success-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; color: var(--tx); margin-bottom: 8px; }
+.success-desc  { font-size: 13px; color: var(--t3); line-height: 1.7; }
+.btn-goto {
+  display: inline-flex; align-items: center; gap: 7px;
+  margin-top: 24px; padding: 11px 28px;
+  background: var(--tx); color: #fff; border-radius: 10px;
+  font-size: 13px; font-weight: 700; text-decoration: none;
+  transition: background .15s, transform .15s;
+  box-shadow: 0 3px 12px rgba(30,32,53,.2);
+}
+.btn-goto:hover { background: #2d3050; transform: translateY(-1px); }
+
+/* 모든 input에 적용된 기본 appearance 해제 (체크박스 예외 처리) */
+input[type="checkbox"] {
+  appearance: auto; /* 브라우저 기본 체크박스 스타일 복구 */
+  -webkit-appearance: checkbox;
+  width: 16px;      /* 크기 지정 */
+  height: 16px;
+  padding: 0;       /* 패딩 제거 */
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--ac); /* 체크 시 브랜드 컬러 적용 */
+}
+
+/* 기존 input:focus 스타일이 체크박스에도 영향을 주어 박스가 커지는 현상 방지 */
+input[type="checkbox"]:focus {
+  box-shadow: none;
+  background: transparent;
+}
+
+/* ─── 애니메이션 ─── */
+@keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+@keyframes fadeUp  { from { opacity: 0; transform: translateY(7px);  } to { opacity: 1; transform: none; } }
+@keyframes spin    { to { transform: rotate(360deg); } }
+
+/* ─── 반응형 ─── */
+@media (max-width: 820px) {
+  body { grid-template-columns: 1fr; }
+  .brand-panel { display: none; }
+  .form-panel { background: var(--dark); min-height: 100vh; }
+  .form-card { box-shadow: none; background: var(--dark2); border: 1px solid rgba(255,255,255,.07); }
+  .form-card label { color: rgba(255,255,255,.55); }
+  .form-title { color: #fff; }
+  .form-sub   { color: rgba(255,255,255,.4); }
+  input, select { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); color: #fff; }
+  input::placeholder { color: rgba(255,255,255,.2); }
+  .tab { color: rgba(255,255,255,.3); }
+  .tab.on { background: rgba(255,255,255,.1); color: #fff; box-shadow: none; }
+  .tabs { background: rgba(255,255,255,.06); }
+  .check-label { color: rgba(255,255,255,.5); }
+  .terms-txt { color: rgba(255,255,255,.3); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ LEFT ══════════════════ -->
+<div class="brand-panel">
+  <div class="bp-grid"></div>
+  <div class="bp-orb bp-orb-1"></div>
+  <div class="bp-orb bp-orb-2"></div>
+
+  <!-- 로고 -->
+  <div class="bp-logo">
+    <div class="bp-logo-mark">P</div>
+    <div class="bp-logo-text">
+      <div class="bp-logo-name">Pickly</div>
+      <div class="bp-logo-sub">AD INTELLIGENCE</div>
+    </div>
+  </div>
+
+  <!-- 언어 선택 -->
+  <div class="lang-bar">
+    <button class="lang-btn on" data-lang="ko" onclick="setLang('ko')">🇰🇷 KO</button>
+    <button class="lang-btn"   data-lang="en" onclick="setLang('en')">🇺🇸 EN</button>
+    <button class="lang-btn"   data-lang="ja" onclick="setLang('ja')">🇯🇵 JA</button>
+  </div>
+
+  <!-- 히어로 -->
+  <div class="bp-hero">
+    <div class="bp-eyebrow" data-i18n="eyebrow"></div>
+    <h1 class="bp-headline" data-i18n="headline"></h1>
+    <p class="bp-desc" data-i18n="desc"></p>
+
+    <div class="bp-features">
+      <div class="bp-feat">
+        <div class="bp-feat-icon">🎬</div>
+        <div>
+          <div class="bp-feat-title" data-i18n="f1t"></div>
+          <div class="bp-feat-sub"   data-i18n="f1s"></div>
+        </div>
+      </div>
+      <div class="bp-feat">
+        <div class="bp-feat-icon">💬</div>
+        <div>
+          <div class="bp-feat-title" data-i18n="f2t"></div>
+          <div class="bp-feat-sub"   data-i18n="f2s"></div>
+        </div>
+      </div>
+      <div class="bp-feat">
+        <div class="bp-feat-icon">📊</div>
+        <div>
+          <div class="bp-feat-title" data-i18n="f3t"></div>
+          <div class="bp-feat-sub"   data-i18n="f3s"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bp-footer">© 2025 Pickly Inc.</div>
+</div>
+
+<!-- ══════════════════ RIGHT ══════════════════ -->
+<div class="form-panel">
+  <div class="form-card">
+
+    <!-- 탭 -->
+    <div class="tabs">
+      <button class="tab on" id="tab-login"  onclick="switchTab('login')"  data-i18n="tab_login"></button>
+      <button class="tab"    id="tab-signup" onclick="switchTab('signup')" data-i18n="tab_signup"></button>
+    </div>
+
+    <!-- ── 로그인 ── -->
+    <div class="form-section on" id="sec-login">
+      <div class="form-head">
+        <div class="form-title" data-i18n="login_title"></div>
+        <div class="form-sub"   data-i18n="login_sub"></div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="lbl_email"></label>
+        <div class="input-wrap">
+          <span class="input-ico">✉</span>
+          <input type="email" id="l-email" data-i18n-ph="ph_email">
+        </div>
+        <div class="err-msg" id="l-email-err" data-i18n="err_email"></div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="lbl_pw"></label>
+        <div class="input-wrap">
+          <span class="input-ico">🔒</span>
+          <input type="password" class="has-eye" id="l-pw" data-i18n-ph="ph_pw">
+          <button class="pwd-eye" tabindex="-1" onclick="eyeToggle('l-pw',this)">👁</button>
+        </div>
+        <div class="err-msg" id="l-pw-err" data-i18n="err_pw"></div>
+      </div>
+
+      <div class="check-row">
+        <label class="check-label">
+          <input type="checkbox"> <span data-i18n="keep_login"></span>
+        </label>
+        <a href="#" class="link" data-i18n="forgot"></a>
+      </div>
+
+      <button class="btn-submit" onclick="doLogin()">
+        <span class="spinner" id="l-spin"></span>
+        <span id="l-btn-txt" data-i18n="btn_login"></span>
+      </button>
+    </div>
+
+    <!-- ── 회원가입 ── -->
+    <div class="form-section" id="sec-signup">
+      <div class="form-head">
+        <div class="form-title" data-i18n="signup_title"></div>
+        <div class="form-sub"   data-i18n="signup_sub"></div>
+      </div>
+
+      <div id="signup-body">
+        <div class="field-row">
+          <div class="field">
+            <label data-i18n="lbl_name"></label>
+            <div class="input-wrap">
+              <span class="input-ico">👤</span>
+              <input type="text" id="s-name" data-i18n-ph="ph_name">
+            </div>
+            <div class="err-msg" id="s-name-err" data-i18n="err_name"></div>
+          </div>
+          <div class="field">
+            <label data-i18n="lbl_company"></label>
+            <div class="input-wrap">
+              <span class="input-ico">🏢</span>
+              <input type="text" id="s-company" data-i18n-ph="ph_company">
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="lbl_email"></label>
+          <div class="input-wrap">
+            <span class="input-ico">✉</span>
+            <input type="email" id="s-email" data-i18n-ph="ph_email">
+          </div>
+          <div class="err-msg" id="s-email-err" data-i18n="err_email"></div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="lbl_role"></label>
+          <div class="select-wrap input-wrap">
+            <span class="input-ico">🛡</span>
+            <select id="s-role">
+              <option value=""      data-i18n="role_ph"></option>
+              <option value="admin"   data-i18n="role_admin"></option>
+              <option value="manager" data-i18n="role_mgr"></option>
+              <option value="viewer"  data-i18n="role_viewer"></option>
+            </select>
+          </div>
+          <div class="err-msg" id="s-role-err" data-i18n="err_role"></div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="lbl_pw"></label>
+          <div class="input-wrap">
+            <span class="input-ico">🔒</span>
+            <input type="password" class="has-eye" id="s-pw"
+                   data-i18n-ph="ph_pw_min" oninput="meterUpdate(this.value)">
+            <button class="pwd-eye" tabindex="-1" onclick="eyeToggle('s-pw',this)">👁</button>
+          </div>
+          <div class="pwd-meter" id="meter">
+            <div class="pwd-bars">
+              <div class="pwd-bar" id="b1"></div>
+              <div class="pwd-bar" id="b2"></div>
+              <div class="pwd-bar" id="b3"></div>
+            </div>
+            <div class="pwd-meter-label" id="meter-lbl"></div>
+          </div>
+          <div class="err-msg" id="s-pw-err" data-i18n="err_pw_len"></div>
+        </div>
+
+        <div class="field">
+          <label data-i18n="lbl_pw2"></label>
+          <div class="input-wrap">
+            <span class="input-ico">🔒</span>
+            <input type="password" class="has-eye" id="s-pw2" data-i18n-ph="ph_pw2">
+            <button class="pwd-eye" tabindex="-1" onclick="eyeToggle('s-pw2',this)">👁</button>
+          </div>
+          <div class="err-msg" id="s-pw2-err" data-i18n="err_pw_match"></div>
+        </div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="s-terms">
+          <div class="terms-txt" id="terms-txt"></div>
+        </div>
+        <div class="err-msg" id="s-terms-err" style="margin-bottom:14px;display:none" data-i18n="err_terms"></div>
+
+        <button class="btn-submit" onclick="doSignup()">
+          <span class="spinner" id="s-spin"></span>
+          <span id="s-btn-txt" data-i18n="btn_signup"></span>
+        </button>
+      </div>
+
+      <!-- 성공 -->
+      <div class="success-box" id="signup-ok">
+        <div class="success-ring">✅</div>
+        <div class="success-title" data-i18n="ok_title"></div>
+        <div class="success-desc"  data-i18n="ok_desc"></div>
+        <a href="#" class="btn-goto" onclick="switchTab('login');return false" data-i18n="ok_btn"></a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════
+   i18n
+═══════════════════════════════ */
+const T = {
+  ko: {
+    eyebrow:"Ad Intelligence Platform",
+    headline:"협찬 광고,<br><em>데이터로 증명하세요.</em>",
+    desc:"유튜브 협찬 영상의 댓글·조회수·반응을 한눈에 분석하는 인텔리전스 플랫폼입니다.",
+    f1t:"영상 자동 수집",   f1s:"협찬 영상을 자동으로 감지·추적합니다",
+    f2t:"댓글 감성 분석",   f2s:"긍정·부정·중립 반응을 실시간 분류합니다",
+    f3t:"성과 리포트",      f3s:"브랜드별 협찬 효과를 수치로 보여줍니다",
+    tab_login:"로그인",     tab_signup:"회원가입",
+    login_title:"다시 오셨군요 👋",  login_sub:"계정에 로그인하여 대시보드를 확인하세요.",
+    signup_title:"계정 만들기 🚀",   signup_sub:"무료로 시작하고 협찬 광고를 분석해 보세요.",
+    lbl_email:"이메일",     lbl_pw:"비밀번호",      lbl_name:"이름",
+    lbl_company:"회사명",   lbl_role:"역할",         lbl_pw2:"비밀번호 확인",
+    ph_email:"hello@company.com",   ph_pw:"비밀번호 입력",
+    ph_name:"홍길동",       ph_company:"(주)픽클리",
+    ph_pw_min:"8자 이상 입력",      ph_pw2:"비밀번호 재입력",
+    role_ph:"역할 선택",    role_admin:"관리자",     role_mgr:"매니저",   role_viewer:"뷰어",
+    keep_login:"로그인 상태 유지",  forgot:"비밀번호 찾기",
+    btn_login:"로그인",     btn_signup:"무료로 시작하기",
+    l_loading:"로그인 중…", s_loading:"가입 중…",
+    pw_weak:"약함", pw_mid:"보통", pw_str:"강함", pw_prefix:"강도",
+    err_email:"올바른 이메일을 입력해 주세요.",
+    err_pw:"비밀번호를 입력해 주세요.",
+    err_name:"이름을 입력해 주세요.",
+    err_role:"역할을 선택해 주세요.",
+    err_pw_len:"비밀번호는 8자 이상이어야 합니다.",
+    err_pw_match:"비밀번호가 일치하지 않습니다.",
+    err_terms:"약관에 동의해 주세요.",
+    terms_html:'<a href="#">이용약관</a> 및 <a href="#">개인정보처리방침</a>에 동의합니다. 수집 데이터는 수집일로부터 <strong style="color:var(--t2)">6개월 후 자동 삭제</strong>됩니다.',
+    ok_title:"가입 완료!", ok_desc:"이메일로 인증 링크를 보내드렸어요.\n확인 후 로그인해 주세요.", ok_btn:"로그인 →",
+  },
+  en: {
+    eyebrow:"Ad Intelligence Platform",
+    headline:"Sponsored Ads,<br><em>Proven by Data.</em>",
+    desc:"An intelligence platform to analyze YouTube sponsored video comments, views & audience reactions.",
+    f1t:"Auto Collection",    f1s:"Automatically detects & tracks sponsored videos",
+    f2t:"Sentiment Analysis", f2s:"Real-time positive/negative/neutral classification",
+    f3t:"Performance Reports",f3s:"Quantifies sponsorship impact per brand",
+    tab_login:"Login",        tab_signup:"Sign Up",
+    login_title:"Welcome back 👋", login_sub:"Log in to access your dashboard.",
+    signup_title:"Create Account 🚀", signup_sub:"Start free and analyze sponsored ads.",
+    lbl_email:"Email",        lbl_pw:"Password",       lbl_name:"Name",
+    lbl_company:"Company",    lbl_role:"Role",          lbl_pw2:"Confirm Password",
+    ph_email:"hello@company.com",    ph_pw:"Enter password",
+    ph_name:"Jane Doe",       ph_company:"Acme Corp.",
+    ph_pw_min:"Min. 8 characters",   ph_pw2:"Re-enter password",
+    role_ph:"Select a role",  role_admin:"Admin",       role_mgr:"Manager",  role_viewer:"Viewer",
+    keep_login:"Keep me logged in",  forgot:"Forgot password?",
+    btn_login:"Log In",       btn_signup:"Get Started Free",
+    l_loading:"Logging in…",  s_loading:"Creating account…",
+    pw_weak:"Weak", pw_mid:"Fair", pw_str:"Strong", pw_prefix:"Strength",
+    err_email:"Please enter a valid email.",
+    err_pw:"Please enter your password.",
+    err_name:"Please enter your name.",
+    err_role:"Please select a role.",
+    err_pw_len:"Password must be at least 8 characters.",
+    err_pw_match:"Passwords do not match.",
+    err_terms:"Please agree to the terms.",
+    terms_html:'I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. Collected data will be <strong style="color:var(--t2)">automatically deleted after 6 months</strong>.',
+    ok_title:"Account Created!", ok_desc:"We sent a verification link to your email.\nPlease verify before logging in.", ok_btn:"Go to Login →",
+  },
+  ja: {
+    eyebrow:"Ad Intelligence Platform",
+    headline:"協賛広告を、<br><em>データで証明する。</em>",
+    desc:"YouTubeの協賛動画のコメント・再生数・反応をまとめて分析するプラットフォームです。",
+    f1t:"動画の自動収集",    f1s:"協賛動画を自動検知・追跡します",
+    f2t:"コメント感情分析",  f2s:"ポジティブ・ネガティブをリアルタイムで分類",
+    f3t:"成果レポート",      f3s:"ブランドごとの効果を数値で可視化します",
+    tab_login:"ログイン",    tab_signup:"新規登録",
+    login_title:"おかえりなさい 👋", login_sub:"アカウントにログインしてください。",
+    signup_title:"アカウント作成 🚀", signup_sub:"無料で始めて協賛広告を分析しましょう。",
+    lbl_email:"メール",      lbl_pw:"パスワード",     lbl_name:"お名前",
+    lbl_company:"会社名",    lbl_role:"役割",          lbl_pw2:"パスワード確認",
+    ph_email:"hello@company.com",    ph_pw:"パスワードを入力",
+    ph_name:"山田 太郎",     ph_company:"株式会社〇〇",
+    ph_pw_min:"8文字以上",   ph_pw2:"パスワードを再入力",
+    role_ph:"役割を選択",    role_admin:"管理者",      role_mgr:"マネージャー", role_viewer:"閲覧者",
+    keep_login:"ログイン状態を保持",  forgot:"パスワードをお忘れの方",
+    btn_login:"ログイン",    btn_signup:"無料で始める",
+    l_loading:"ログイン中…", s_loading:"登録中…",
+    pw_weak:"弱い", pw_mid:"普通", pw_str:"強い", pw_prefix:"強度",
+    err_email:"有効なメールアドレスを入力してください。",
+    err_pw:"パスワードを入力してください。",
+    err_name:"お名前を入力してください。",
+    err_role:"役割を選択してください。",
+    err_pw_len:"パスワードは8文字以上が必要です。",
+    err_pw_match:"パスワードが一致しません。",
+    err_terms:"利用規約に同意してください。",
+    terms_html:'<a href="#">利用規約</a>および<a href="#">プライバシーポリシー</a>に同意します。収集データは<strong style="color:var(--t2)">6ヶ月後に自動削除</strong>されます。',
+    ok_title:"登録完了！", ok_desc:"認証リンクをメールに送りました。\n確認後ログインしてください。", ok_btn:"ログインへ →",
+  }
+};
+
+let lang = localStorage.getItem('pl_lang') || '{{ lang|default("ko") }}';
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('pl_lang', l);
+  const t = T[l];
+  document.querySelector('html').lang = l;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = t[el.dataset.i18n];
+    if (v !== undefined) el.innerHTML = v.replace(/\n/g,'<br>');
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const v = t[el.dataset.i18nPh];
+    if (v !== undefined) el.placeholder = v;
+  });
+  document.querySelectorAll('option[data-i18n]').forEach(el => {
+    const v = t[el.dataset.i18n];
+    if (v !== undefined) el.textContent = v;
+  });
+  document.getElementById('terms-txt').innerHTML = t.terms_html || '';
+
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('on', b.dataset.lang === l)
+  );
+}
+
+setLang(lang);
+
+/* ═══════════════════════════════
+   탭 전환
+═══════════════════════════════ */
+function switchTab(tab) {
+  ['login','signup'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('on', t === tab);
+    document.getElementById('sec-'+t).classList.toggle('on', t === tab);
+  });
+}
+
+/* ═══════════════════════════════
+   비밀번호 보기 토글
+═══════════════════════════════ */
+function eyeToggle(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'text' ? '🙈' : '👁';
+}
+
+/* ═══════════════════════════════
+   비밀번호 강도
+═══════════════════════════════ */
+function meterUpdate(val) {
+  const t = T[lang];
+  const el = document.getElementById('meter');
+  el.style.display = val ? 'block' : 'none';
+  const bars = ['b1','b2','b3'].map(id => document.getElementById(id));
+  bars.forEach(b => b.className = 'pwd-bar');
+  let s = 0;
+  if (val.length >= 8) s++;
+  if (/[A-Z]/.test(val) && /[0-9]/.test(val)) s++;
+  if (/[^A-Za-z0-9]/.test(val)) s++;
+  const lvl = s === 0 ? null : [
+    {cls:'w', key:'pw_weak',  n:1},
+    {cls:'m', key:'pw_mid',   n:2},
+    {cls:'s', key:'pw_str',   n:3},
+  ][Math.min(s-1,2)];
+  if (lvl) {
+    for(let i=0;i<lvl.n;i++) bars[i].classList.add(lvl.cls);
+    const lbl = document.getElementById('meter-lbl');
+    lbl.textContent = `${t.pw_prefix}: ${t[lvl.key]}`;
+    lbl.style.color = lvl.cls==='w'?'#f87171':lvl.cls==='m'?'#fb923c':'var(--green)';
+  }
+}
+
+/* ═══════════════════════════════
+   유효성 헬퍼
+═══════════════════════════════ */
+const isEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+function setErr(inputId, errId, show) {
+  const inp = document.getElementById(inputId);
+  const err = document.getElementById(errId);
+  if (inp) inp.classList.toggle('err', show);
+  if (err) err.style.display = show ? 'block' : 'none';
+  return !show;
+}
+
+/* ═══════════════════════════════
+   로그인
+═══════════════════════════════ */
+function doLogin() {
+    const email = document.getElementById('l-email').value.trim();
+    const pw    = document.getElementById('l-pw').value;
+    const t = T[lang];
+    
+    let ok = true;
+    ok = setErr('l-email', 'l-email-err', !isEmail(email)) && ok;
+    ok = setErr('l-pw',    'l-pw-err',    !pw)             && ok;
+    if (!ok) return;
+
+    // 로딩 표시
+    document.getElementById('l-spin').style.display = 'block';
+    document.getElementById('l-btn-txt').textContent = t.l_loading;
+
+    // ✨ 서버로 실제 데이터 전송 (Form 생성 및 제출)
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/login'; // Flask의 @app.route("/login")으로 보냄
+
+    const emailInput = document.createElement('input');
+    emailInput.type = 'hidden';
+    emailInput.name = 'email';
+    emailInput.value = email;
+
+    const pwInput = document.createElement('input');
+    pwInput.type = 'hidden';
+    pwInput.name = 'password';
+    pwInput.value = pw;
+
+    form.appendChild(emailInput);
+    form.appendChild(pwInput);
+    document.body.appendChild(form);
+    form.submit(); // 이제 서버로 날아갑니다!
+}
+
+/* ═══════════════════════════════
+   회원가입
+═══════════════════════════════ */
+function doSignup() {
+  const name = document.getElementById('s-name').value.trim();
+  const company = document.getElementById('s-company').value.trim();
+  const email = document.getElementById('s-email').value.trim();
+  const role = document.getElementById('s-role').value;
+  const pw = document.getElementById('s-pw').value;
+  const pw2 = document.getElementById('s-pw2').value;
+  const terms = document.getElementById('s-terms').checked;
+  
+  let ok = true;
+  ok = setErr('s-name', 's-name-err', !name) && ok;
+  ok = setErr('s-email', 's-email-err', !isEmail(email)) && ok;
+  ok = setErr('s-role', 's-role-err', !role) && ok;
+  ok = setErr('s-pw', 's-pw-err', pw.length < 8) && ok;
+  ok = setErr('s-pw2', 's-pw2-err', pw !== pw2) && ok;
+  
+  if (!terms) { document.getElementById('s-terms-err').style.display = 'block'; ok = false; }
+
+  if (!ok) return;
+
+  // 실제 서버 전송 로직
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/signup';
+
+  const data = { name, company, email, role, password: pw };
+  for (const key in data) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;
+    input.value = data[key];
+    form.appendChild(input);
+  }
+  document.body.appendChild(form);
+  form.submit();
+}
+
+/* Enter 키 */
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  document.getElementById('sec-login').classList.contains('on') ? doLogin() : doSignup();
+});
+
+/* URL ?tab=signup */
+if (new URLSearchParams(location.search).get('tab') === 'signup') switchTab('signup');
+
+/* 가입 성공 파라미터 체크 및 UI 처리 */
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(location.search);
+  
+  // 가입 성공 시 (서버에서 success=true를 보냈을 때)
+  if (params.get('success') === 'true') {
+    switchTab('signup'); // 먼저 회원가입 탭으로 전환
+    
+    // 입력 폼은 숨기고, 성공 박스(signup-ok)를 노출
+    const signupBody = document.getElementById('signup-body');
+    const signupOk = document.getElementById('signup-ok');
+    
+    if (signupBody) signupBody.style.display = 'none';
+    if (signupOk) signupOk.style.display = 'block';
+  }
+  
+  // 참고: 에러 처리 (선택 사항)
+  if (params.get('error') === 'db') {
+    alert("이미 등록된 이메일이거나 가입 중 오류가 발생했습니다.");
+  }
+});
+</script>
+</body>
+</html>

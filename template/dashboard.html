@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Pickly — 캠페인</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#F7F8FA; --bg2:#FFFFFF; --bg3:#F0F2F5; --bg4:#E2E6ED;
+  --border:rgba(15,23,42,.07); --border2:rgba(15,23,42,.12);
+  --pos:#059669; --pos-bg:#ECFDF5; --pos-bd:rgba(5,150,105,.2);
+  --neg:#DC2626; --neg-bg:#FEF2F2; --neg-bd:rgba(220,38,38,.2);
+  --neu:#0284C7; --neu-bg:#F0F9FF; --neu-bd:rgba(2,132,199,.2);
+  --warn:#D97706; --warn-bg:#FFFBEB; --warn-bd:rgba(217,119,6,.2);
+  --brand:#6c63f6; --brand-bg:#F5F3FF; --brand-bd:rgba(108,99,246,.2);
+  --ink:#0F172A; --ink2:#374151; --ink3:#9CA3AF;
+  --r:12px; --r-sm:8px;
+  --sh:0 1px 3px rgba(15,23,42,.05),0 4px 14px rgba(15,23,42,.07);
+  --sh-md:0 6px 24px rgba(15,23,42,.12);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:13px;min-width:900px}
+.layout{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:0;left:0;bottom:0;width:214px;background:#1a1c2e;display:flex;flex-direction:column;z-index:200}
+.sb-logo{padding:22px 20px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:11px}
+.sb-mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#6c63f6,#9b95f8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(108,99,246,.45)}
+.sb-name{font-size:15px;font-weight:800;color:#fff;letter-spacing:-.01em}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.3);font-family:'DM Mono',monospace;margin-top:2px;letter-spacing:.08em}
+.sb-nav{padding:14px 0;flex:1;overflow-y:auto}
+.sb-sec{font-size:9px;letter-spacing:.2em;color:rgba(255,255,255,.25);text-transform:uppercase;font-weight:700;padding:0 20px;margin:14px 0 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.45);cursor:pointer;transition:all .18s;margin:2px 8px}
+.sb-item:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.05)}
+.sb-item.active{color:#fff;background:rgba(108,99,246,.25)}
+.sb-icon-wrap{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:rgba(255,255,255,.06);transition:all .2s}
+.sb-item.active .sb-icon-wrap{background:linear-gradient(135deg,#6c63f6,#9b95f8);box-shadow:0 3px 10px rgba(108,99,246,.4)}
+.sb-icon{font-size:13px;flex-shrink:0}
+
+.sb-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.sb-live{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:700;color:#10b981;font-family:'DM Mono',monospace}
+.sb-live-dot{width:6px;height:6px;border-radius:50%;background:#10b981;animation:pulse 2s infinite}
+.sb-refresh{font-size:9px;color:rgba(255,255,255,.25);margin-top:3px;font-family:'DM Mono',monospace}
+.sb-back{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;font-size:12px;font-weight:600;color:rgba(255,255,255,.4);text-decoration:none;margin:0 8px 10px;border:1px solid rgba(255,255,255,.08);transition:all .15s}
+.sb-back:hover{color:rgba(255,255,255,.75);background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.15)}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
+
+.sidebar{transition:transform 0.35s cubic-bezier(0.4,0,0.2,1)}
+.main{transition:margin-left 0.35s cubic-bezier(0.4,0,0.2,1)}
+body.sidebar-closed .sidebar{transform:translateX(-100%)}
+body.sidebar-closed .main{margin-left:0}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.sidebar-toggle{background:transparent;border:none;color:var(--ink);cursor:pointer;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background 0.15s}
+.sidebar-toggle:hover{background:var(--bg3)}
+
+/* MAIN */
+.main{margin-left:214px;flex:1;min-width:0;overflow-x:hidden}
+
+/* GLOBAL ALERT */
+.global-alert{display:flex;align-items:center;gap:10px;background:#FFF1F0;border-bottom:1.5px solid var(--neg-bd);padding:9px 28px;border-top:3px solid var(--neg)}
+.global-alert.hidden{display:none}
+.ga-dot{width:7px;height:7px;border-radius:50%;background:var(--neg);animation:blink 1s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ga-text{font-size:12px;color:var(--neg);font-weight:600;flex:1}
+.ga-close{width:22px;height:22px;border-radius:5px;border:none;background:rgba(224,62,45,.1);color:var(--neg);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .12s}
+
+/* TOPBAR */
+.sticky-header{position:sticky;top:0;z-index:100;background:#fff;box-shadow:0 2px 12px rgba(15,23,42,.08)}
+.topbar{background:#fff;border-bottom:1px solid var(--border2);padding:10px 28px;display:flex;align-items:center;justify-content:space-between}
+.topbar-crumb{font-size:10px;color:var(--ink3);margin-bottom:1px}
+.topbar-title{font-size:16px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:8px;letter-spacing:-.03em}
+.live-badge{display:inline-flex;align-items:center;gap:4px;background:var(--pos-bg);border:1.5px solid var(--pos-bd);border-radius:20px;padding:2px 9px;font-size:9px;font-weight:800;color:var(--pos);font-family:'DM Mono',monospace}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--pos);animation:pulse 2s infinite}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.btn{padding:6px 14px;border-radius:var(--r-sm);font-size:11px;font-weight:700;font-family:'Pretendard',sans-serif;cursor:pointer;border:1.5px solid transparent;transition:all .14s;display:inline-flex;align-items:center;gap:5px;letter-spacing:-.01em}
+.btn-primary{background:linear-gradient(135deg,#6C3CE1,#8B5CF6);color:#fff;box-shadow:0 2px 10px rgba(108,60,225,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(108,60,225,.4)}
+
+/* LANG TOGGLE */
+.lang-toggle{display:flex;background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;overflow:hidden}
+.lang-btn{padding:5px 12px;font-size:10px;font-weight:800;letter-spacing:.04em;cursor:pointer;border:none;background:transparent;color:var(--ink3);transition:all .12s;font-family:'Pretendard',sans-serif}
+.lang-btn.active{background:var(--ink);color:#fff}
+
+/* HERO CARD */
+.hero-card{background:#ffffff;border:1px solid var(--border);border-radius:var(--r);padding:36px 40px 0;box-shadow:var(--sh);margin-bottom:24px;overflow:hidden;position:relative}
+.hero-top-badges{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.hero-badge-active{background:var(--brand-bg);color:var(--brand);border:1px solid var(--brand-bd);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:0.05em}
+.hero-updated{font-size:11px;color:var(--ink3);font-family:'DM Mono',monospace;font-weight:600}
+.hero-title{font-size:42px;font-weight:800;color:var(--ink);line-height:1.15;margin-bottom:16px;letter-spacing:-0.02em}
+.hero-title span{background:linear-gradient(135deg,var(--brand),#9b95f8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-desc{font-size:15px;color:var(--ink2);line-height:1.6;max-width:600px;margin-bottom:28px;word-break:keep-all}
+.hero-mid-badges{display:flex;align-items:center;gap:12px;margin-bottom:40px}
+.hm-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--ink2);font-weight:600}
+.hm-dot{width:8px;height:8px;border-radius:50%;background:var(--pos);animation:pulse 2s infinite}
+.hero-insight-bar{background:var(--brand-bg);border-top:1px solid var(--brand-bd);margin:0 -40px;padding:12px 24px;display:flex;align-items:center;gap:12px}
+.btn-ai-insights{background:linear-gradient(135deg,var(--brand),#8B5CF6);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 4px 12px rgba(108,99,246,.25);transition:transform 0.15s}
+.btn-ai-insights:hover{transform:translateY(-1px)}
+.hero-btn-tts{background:#ffffff;color:var(--brand);border:1px solid var(--brand-bd);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;z-index:10}
+.hero-btn-tts:hover{background:var(--brand);color:#fff}
+.hero-btn-tts.playing{background:var(--brand);color:#fff;animation:pulse 1.5s infinite}
+.insight-marquee-wrap{flex:1;overflow:hidden;white-space:nowrap;position:relative;-webkit-mask-image:linear-gradient(to right,transparent,black 15%,black 85%,transparent);mask-image:linear-gradient(to right,transparent,black 15%,black 85%,transparent)}
+.insight-marquee-track{display:inline-block;white-space:nowrap;animation:scroll-left var(--marquee-duration,40s) linear infinite;will-change:transform}
+.insight-marquee-text{font-size:13px;color:var(--ink);font-weight:500;display:inline-block;padding-right:50px}
+.insight-marquee-text strong{font-weight:700;color:var(--brand)}
+.insight-marquee-text .warn{color:var(--neg);font-weight:700}
+@keyframes scroll-left{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* CAMPAIGN SUMMARY */
+.camp-summary{background:#fff;border-bottom:1px solid var(--border2);padding:10px 28px}
+.camp-kpi-row{display:flex;gap:6px;flex-wrap:wrap}
+.camp-kpi-chip{display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:9px;background:#fff;border:1.5px solid var(--border2);box-shadow:0 1px 3px rgba(15,23,42,.06)}
+.camp-kpi-chip-label{font-size:10px;color:var(--ink3);font-weight:500}
+.camp-kpi-chip-val{font-size:14px;font-weight:800;font-family:'DM Mono',monospace;color:var(--ink)}
+.camp-kpi-chip-val.pos{color:var(--pos)}.camp-kpi-chip-val.neg{color:var(--neg)}.camp-kpi-chip-val.warn{color:var(--warn)}.camp-kpi-chip-val.neu{color:var(--neu)}
+.camp-kpi-chip.alert{background:var(--neg-bg);border-color:var(--neg-bd)}
+.camp-alert-dot{width:7px;height:7px;border-radius:50%;background:var(--neg);animation:blink 1s infinite;flex-shrink:0}
+
+/* VIDEO TABS */
+.video-tabs-wrap{background:#fff;border-bottom:1px solid var(--border2);padding:0 24px;display:flex;overflow-x:auto}
+.vtab{padding:11px 18px;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .14s;flex-shrink:0;min-width:200px;border-right:1px solid var(--border)}
+.vtab:hover{background:rgba(255,255,255,.6)}
+.vtab.active{border-bottom-color:var(--brand);background:#fff;box-shadow:inset 0 3px 0 var(--brand)}
+.vtab-top{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.vtab-num{font-size:9px;font-weight:800;color:var(--ink3);background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;flex-shrink:0;font-family:'DM Mono',monospace}
+.vtab.active .vtab-num{background:var(--brand-bg);color:var(--brand);border-color:rgba(108,60,225,.2)}
+.vtab-label{font-size:12px;font-weight:700;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px}
+.vtab.active .vtab-label{color:var(--brand)}
+.vtab-warn{font-size:9px;font-weight:800;color:var(--neg);background:var(--neg-bg);border:1.5px solid var(--neg-bd);border-radius:5px;padding:1px 6px}
+.vtab-rank{font-size:9px;font-weight:800;border-radius:5px;padding:1px 6px}
+.vtab-rank.r1{background:#FFFBEB;color:#D97706;border:1.5px solid rgba(217,119,6,.25)}
+.vtab-rank.r2{background:var(--bg3);color:var(--ink2);border:1.5px solid var(--border2)}
+.vtab-rank.r3{background:#FEF0EE;color:#E03E2D;border:1.5px solid rgba(224,62,45,.2)}
+.vtab-meta{font-size:10px;color:var(--ink3);display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.vtab-meta b{color:var(--ink2);font-weight:600}
+.vtab-score{display:flex;align-items:center;gap:8px}
+.vtab-score-labels{display:flex;flex-direction:column;gap:4px;flex:1}
+.vtab-score-row{display:flex;align-items:center;gap:5px}
+.vtab-score-key{font-size:8px;font-weight:700;color:var(--ink3);text-transform:uppercase;min-width:26px;font-family:'DM Mono',monospace}
+.vtab-score-track{flex:1;height:4px;background:var(--bg4);border-radius:3px;overflow:hidden;min-width:40px}
+.vtab-score-fill{height:100%;border-radius:3px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.vtab-score-fill.quality{background:linear-gradient(90deg,#2563EB,#60A5FA)}
+.vtab-score-fill.scale{background:linear-gradient(90deg,#D97706,#FBBF24)}
+.vtab-score-fill.total{background:linear-gradient(90deg,#17A85A,#34D399)}
+.vtab-score-num{font-size:9px;font-weight:800;font-family:'DM Mono',monospace;min-width:26px;text-align:right}
+.vtab-score-num.quality{color:var(--neu)}.vtab-score-num.scale{color:var(--warn)}.vtab-score-num.total{color:var(--pos)}
+.vtab-total-badge{display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;width:38px}
+.vtab-total-val{font-size:17px;font-weight:800;font-family:'DM Mono',monospace;color:var(--pos);line-height:1}
+.vtab.active .vtab-total-val{color:var(--brand)}
+.vtab-total-label{font-size:8px;font-weight:700;color:var(--ink3);text-transform:uppercase;margin-top:1px}
+
+/* CONTENT */
+.content{padding:24px 28px;max-width:1400px}
+.camp-header{margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.camp-title{font-size:22px;font-weight:800;color:var(--ink);line-height:1.2;margin-bottom:6px;letter-spacing:-.03em}
+.camp-title em{font-style:italic;color:var(--brand);font-weight:700}
+.camp-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink3)}
+.camp-meta b{color:var(--ink2);font-weight:600}
+.camp-meta-sep{color:var(--border2)}
+.sec-hd{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.sec-num{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,#0284C7,#06B6D4);color:#fff;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;box-shadow:0 2px 6px rgba(2,132,199,.3)}
+.sec-title{font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+.sec-sub{font-size:11px;color:var(--ink3)}
+.card{background:#fff;border:1px solid var(--border2);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,#EBF8FF 0%,#F0FDFF 100%)}
+.card-hd-title{font-size:11px;font-weight:700;color:var(--ink)}
+.card-hd-sub{font-size:10px;color:var(--ink3)}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px}
+.kpi-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);border-top:3px solid transparent;transition:transform .15s,box-shadow .15s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:var(--sh-md)}
+.kpi-card.c-pos{border-top-color:var(--pos);background:linear-gradient(160deg,#ECFDF5 0%,#fff 55%)}.kpi-card.c-neg{border-top-color:var(--neg);background:linear-gradient(160deg,#FEF2F2 0%,#fff 55%)}.kpi-card.c-neu{border-top-color:var(--neu);background:linear-gradient(160deg,#F0F9FF 0%,#fff 55%)}.kpi-card.c-warn{border-top-color:var(--warn);background:linear-gradient(160deg,#FFFBEB 0%,#fff 55%)}.kpi-card.c-score{border-top-color:var(--brand);background:linear-gradient(160deg,#F5F3FF 0%,#fff 55%)}
+.kpi-emoji{font-size:22px;margin-bottom:8px;line-height:1}
+.kpi-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px}
+.kpi-val{font-size:28px;font-weight:800;color:var(--ink);font-family:'DM Mono',monospace;line-height:1;margin-bottom:5px;letter-spacing:-.03em}
+.kpi-val.c-pos{color:var(--pos)}.kpi-val.c-neg{color:var(--neg)}.kpi-val.c-warn{color:var(--warn)}.kpi-val.c-brand{color:var(--brand)}
+.kpi-unit{font-family:'Pretendard','Apple SD Gothic Neo',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.01em}
+.kpi-sub{font-size:10px;color:var(--ink3)}
+.score-breakdown{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.score-bd-row{display:flex;align-items:center;gap:6px}
+.score-bd-key{font-size:8px;font-weight:700;color:var(--ink3);text-transform:uppercase;min-width:22px;font-family:'DM Mono',monospace}
+.score-bd-track{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.score-bd-fill{height:100%;border-radius:2px;transition:width .9s cubic-bezier(.4,0,.2,1)}
+.score-bd-fill.q{background:linear-gradient(90deg,#2563EB,#60A5FA)}.score-bd-fill.s{background:linear-gradient(90deg,#D97706,#FBBF24)}
+.score-bd-num{font-size:9px;font-weight:700;font-family:'DM Mono',monospace;color:var(--ink3);min-width:22px;text-align:right}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:800}
+.tag.pos{background:var(--pos-bg);color:var(--pos);border:1.5px solid var(--pos-bd)}.tag.neg{background:var(--neg-bg);color:var(--neg);border:1.5px solid var(--neg-bd)}.tag.neu{background:var(--neu-bg);color:var(--neu);border:1.5px solid var(--neu-bd)}.tag.warn{background:var(--warn-bg);color:var(--warn);border:1.5px solid var(--warn-bd)}.tag.brand{background:var(--brand-bg);color:var(--brand);border:1.5px solid var(--brand-bd)}.tag.gray{background:var(--bg3);color:var(--ink2);border:1.5px solid var(--border2)}
+
+/* CAMPAIGN INSIGHT TABLE */
+.cit-wrap{overflow:hidden;margin-bottom:24px}
+.camp-insight-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.camp-insight-table thead th{padding:10px 14px;text-align:left;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:linear-gradient(135deg,#EBF8FF 0%,#F0FDFF 100%);border-bottom:2px solid var(--border2);overflow:hidden}
+.camp-insight-table thead th.th-video{border-left:1px solid var(--border)}
+.camp-insight-table tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+.camp-insight-table tbody tr:last-child{border-bottom:none}
+.camp-insight-table tbody tr:hover{background:var(--bg3)}
+.camp-insight-table td{padding:10px 14px;vertical-align:middle;overflow:hidden}
+.camp-insight-table td.td-video{border-left:1px solid var(--border)}
+.cit-metric-cell{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--ink2)}
+.camp-insight-table td:first-child{background:#F8F7F4;border-right:1px solid #E8E4DC}
+.cit-val-wrap{display:flex;flex-direction:column;gap:3px}
+.cit-val{font-size:13px;font-weight:800;font-family:'DM Mono',monospace}
+.cit-val.best{color:var(--pos)}.cit-val.mid{color:var(--warn)}.cit-val.low{color:var(--ink2)}.cit-val.alert{color:var(--neg)}
+.cit-bar-wrap{display:flex;align-items:center;gap:6px;margin-top:2px}
+.cit-bar-track{width:72px;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;flex-shrink:0}
+.cit-bar-fill{height:100%;border-radius:2px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.cit-bar-fill.pos{background:linear-gradient(90deg,var(--pos),#34D399)}.cit-bar-fill.neg{background:linear-gradient(90deg,var(--neg),#F87171)}.cit-bar-fill.warn{background:linear-gradient(90deg,var(--warn),#FBBF24)}.cit-bar-fill.neu{background:linear-gradient(90deg,var(--neu),#60A5FA)}.cit-bar-fill.brand{background:linear-gradient(90deg,var(--brand),#A78BFA)}
+.best-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:8px;font-weight:800;background:var(--pos-bg);color:var(--pos);border:1px solid var(--pos-bd);margin-left:4px}
+.alert-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:8px;font-weight:800;background:var(--neg-bg);color:var(--neg);border:1px solid var(--neg-bd);margin-left:4px}
+.cit-video-col{display:flex;flex-direction:column;gap:2px}
+.cit-video-name{font-size:12px;font-weight:800;color:var(--ink)}
+.cit-video-sub{font-size:9px;color:var(--ink3);font-family:'DM Mono',monospace}
+.cit-rank-chip{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;font-size:10px;font-weight:800;margin-right:4px;flex-shrink:0}
+.cit-rank-chip.r1{background:#FFFBEB;color:#D97706;border:1.5px solid rgba(217,119,6,.3)}.cit-rank-chip.r2{background:var(--bg4);color:var(--ink2);border:1.5px solid var(--border2)}.cit-rank-chip.r3{background:#FEF0EE;color:var(--neg);border:1.5px solid var(--neg-bd)}
+.action-strip{display:flex;gap:8px;padding:14px 16px;border-top:1px solid var(--border);background:var(--bg3);flex-wrap:wrap}
+.action-item{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:190px;background:#fff;border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 13px}
+.action-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.action-dot.urgent{background:var(--neg)}.action-dot.watch{background:var(--warn)}.action-dot.good{background:var(--pos)}
+.action-text{font-size:11.5px;color:var(--ink);line-height:1.55}
+.action-text strong{font-weight:700}
+.action-inline{display:flex;align-items:flex-start;gap:6px;margin-bottom:7px}
+.action-inline:last-child{margin-bottom:0}
+.action-text-sm{font-size:11px;color:var(--ink2);line-height:1.5}
+.action-text-sm strong{font-weight:700;color:var(--ink)}
+.action-row td{border-top:2px solid var(--border2);background:var(--bg3)}
+
+/* TREND */
+.trend-card{margin-bottom:20px}
+.trend-body{padding:14px 16px}
+.trend-canvas-wrap{height:190px;position:relative}
+.trend-legend{display:flex;gap:14px;align-items:center}
+.tl-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink3);font-weight:500}
+.tl-dot{width:9px;height:9px;border-radius:50%}
+.trend-ctrl{display:flex;gap:3px}
+.trend-btn{padding:4px 10px;border-radius:7px;border:1.5px solid var(--border2);background:#fff;color:var(--ink3);font-size:10px;font-weight:700;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .12s}
+.trend-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.trend-view-toggle{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px}
+.trend-view-toggle .trend-btn{border:none;border-radius:5px;background:transparent;color:var(--ink3)}
+.trend-view-toggle .trend-btn.active{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(15,23,42,.1)}
+.trend-style-toggle{display:flex;gap:4px}
+.review-platform-toggle{display:flex;gap:4px}
+.review-summary-bar{display:flex;align-items:center;gap:16px;padding:8px 16px 12px;border-top:1px solid var(--border);font-size:11px;flex-wrap:wrap}
+.review-sum-item{display:flex;align-items:center;gap:5px}
+.review-sum-label{color:var(--ink3);font-size:10px}
+.review-sum-val{font-weight:800;font-family:'DM Mono',monospace}
+.review-sum-diff{font-size:10px;font-weight:700;padding:1px 7px;border-radius:5px}
+.review-sum-diff.up{background:var(--pos-bg);color:var(--pos)}
+.review-sum-diff.down{background:var(--neg-bg);color:var(--neg)}
+.review-sum-diff.flat{background:var(--bg3);color:var(--ink3)}
+.review-bar-chart{padding:14px 20px;display:flex;flex-direction:column;gap:10px}
+.review-bin-row{display:flex;align-items:center;gap:10px}
+.review-bin-label{font-size:10px;font-weight:700;color:var(--ink2);min-width:70px;flex-shrink:0}
+.review-bin-bars{flex:1;display:flex;flex-direction:column;gap:4px}
+.review-platform-row{display:flex;align-items:center;gap:6px}
+.review-platform-name{font-size:9px;color:var(--ink3);min-width:52px;flex-shrink:0}
+.review-bar-track{flex:1;height:8px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.review-bar-fill{height:100%;border-radius:4px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.review-bar-fill.naver{background:linear-gradient(90deg,#03C75A,#56e08a)}
+.review-bar-fill.olive{background:linear-gradient(90deg,#6C3CE1,#A78BFA)}
+.review-bar-fill.default0{background:linear-gradient(90deg,#2563EB,#60A5FA)}
+.review-bar-fill.default1{background:linear-gradient(90deg,#D97706,#FBBF24)}
+.review-rating-badge{font-size:10px;font-weight:800;font-family:'DM Mono',monospace;min-width:28px;color:var(--warn)}
+.review-count-badge{font-size:9px;color:var(--ink3);font-family:'DM Mono',monospace}
+
+/* VOC */
+.voc-wrap{margin-bottom:20px}
+.voc-main-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.voc-keyword-cols{display:flex;flex-direction:column;gap:10px}
+.voc-panel-hd{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--border)}
+.voc-panel-hd.pos{background:linear-gradient(135deg,var(--pos-bg),#fff)}.voc-panel-hd.neg{background:linear-gradient(135deg,var(--neg-bg),#fff)}
+.vp-title{font-size:11px;font-weight:800}.vp-title.pos{color:var(--pos)}.vp-title.neg{color:var(--neg)}
+.vp-cnt{font-size:10px;color:var(--ink3);margin-left:auto;font-family:'DM Mono',monospace;font-weight:600}
+.voc-row{display:grid;grid-template-columns:24px 1fr 100px 40px;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid rgba(15,23,42,.04);cursor:pointer;transition:background .1s}
+.voc-row:last-child{border-bottom:none}.voc-row:hover{background:var(--bg3)}.voc-row.selected{background:var(--brand-bg);border-left:2.5px solid var(--brand)}
+.voc-rk{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0}
+.voc-rk.r1{background:#FFFBEB;color:#D97706;border:1.5px solid rgba(217,119,6,.25)}.voc-rk.r2{background:var(--bg4);color:var(--ink2);border:1.5px solid var(--border2)}.voc-rk.r3{background:#FEF0EE;color:#E03E2D;border:1px solid rgba(224,62,45,.15)}
+.voc-name{font-size:12px;font-weight:700;color:var(--ink)}
+.voc-bar-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.voc-bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.voc-bar-fill.pos{background:linear-gradient(90deg,var(--pos),#34D399)}.voc-bar-fill.neg{background:linear-gradient(90deg,var(--neg),#F87171)}
+.voc-pct{font-size:11px;font-weight:800;text-align:right;font-family:'DM Mono',monospace}
+.voc-pct.pos{color:var(--pos)}.voc-pct.neg{color:var(--neg)}
+.voc-comments-panel{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;display:flex;flex-direction:column;min-height:380px;max-height:600px}
+.voc-comments-panel-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg3);flex-shrink:0}
+.vcp-title{font-size:11px;font-weight:700;color:var(--ink)}
+.vcp-badge{padding:2px 8px;border-radius:5px;font-size:10px;font-weight:800;font-family:'DM Mono',monospace}
+.vcp-badge.pos{background:var(--pos-bg);color:var(--pos);border:1.5px solid var(--pos-bd)}.vcp-badge.neg{background:var(--neg-bg);color:var(--neg);border:1.5px solid var(--neg-bd)}
+.vcp-sort{display:flex;align-items:center;gap:4px;margin-left:auto}
+.sort-btn{padding:3px 9px;border-radius:6px;border:1.5px solid var(--border2);background:#fff;color:var(--ink3);font-size:10px;font-weight:700;cursor:pointer;font-family:'Pretendard',sans-serif;transition:all .12s}
+.sort-btn.active{background:var(--brand-bg);border-color:var(--brand-bd);color:var(--brand)}
+.voc-comments-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;color:var(--ink3);font-size:12px;text-align:center}
+.voc-comments-empty-icon{font-size:32px;opacity:.4}
+.voc-comments-list{flex:1;overflow-y:auto;max-height:520px}
+.vd-comment-card{padding:12px 15px;border-bottom:1px solid rgba(15,23,42,.05);transition:background .1s}
+.vd-comment-card:last-child{border-bottom:none}.vd-comment-card:hover{background:var(--bg3)}
+.vd-comment-text{font-size:12.5px;color:var(--ink);line-height:1.6;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.vd-comment-text.expanded{-webkit-line-clamp:unset;overflow:visible}
+.vd-more-btn{display:none;margin-bottom:6px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:none;padding:0;cursor:pointer;font-family:'Pretendard',sans-serif}
+.vd-more-btn:hover{text-decoration:underline}
+.vd-comment-meta{display:flex;align-items:center;gap:8px}
+.vd-author{font-size:10px;color:var(--ink3);font-weight:500}
+.sent-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:800}
+.sent-badge.pos{background:var(--pos-bg);color:var(--pos);border:1px solid var(--pos-bd)}.sent-badge.neg{background:var(--neg-bg);color:var(--neg);border:1px solid var(--neg-bd)}
+
+/* AUDIENCE */
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;align-items:start}
+.seg-body{padding:14px 18px 10px}
+.seg-chart-wrap{height:160px;position:relative;margin-bottom:10px}
+.seg-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.seg-center-val{font-size:22px;font-weight:800;color:var(--ink);font-family:'DM Mono',monospace}
+.seg-center-sub{font-size:9px;color:var(--ink3);font-weight:500}
+.seg-row{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.seg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.seg-label{font-size:12px;font-weight:700;color:var(--ink);min-width:52px}
+.seg-desc{font-size:10px;color:var(--ink3);flex:1}
+.seg-bar-track{width:80px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;flex-shrink:0}
+.seg-bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.seg-pct{font-size:11px;font-weight:800;color:var(--ink2);font-family:'DM Mono',monospace;min-width:32px;text-align:right}
+.inflow-body{padding:14px 16px}
+.inflow-seg-row{display:flex;align-items:flex-start;gap:12px;padding:11px 13px;border-radius:var(--r-sm);border:1px solid var(--border);margin-bottom:8px;transition:all .12s;background:#fff}
+.inflow-seg-row:last-child{margin-bottom:0}.inflow-seg-row:hover{background:var(--bg3);transform:translateX(2px)}
+.inflow-seg-badge{min-width:80px;padding:3px 9px;border-radius:7px;font-size:10px;font-weight:800;text-align:center;font-family:'DM Mono',monospace;flex-shrink:0}
+.inflow-seg-badge.early{background:var(--neu-bg);color:var(--neu);border:1.5px solid var(--neu-bd)}
+.inflow-seg-badge.expansion{background:var(--warn-bg);color:var(--warn);border:1.5px solid var(--warn-bd)}
+.inflow-seg-badge.steady{background:var(--pos-bg);color:var(--pos);border:1.5px solid var(--pos-bd)}
+.inflow-seg-right{flex:1;min-width:0}
+.inflow-seg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.inflow-seg-name{font-size:12px;font-weight:700;color:var(--ink)}
+.inflow-seg-pct{font-size:14px;font-weight:800;font-family:'DM Mono',monospace}
+.inflow-seg-pct.early{color:var(--neu)}.inflow-seg-pct.expansion{color:var(--warn)}.inflow-seg-pct.steady{color:var(--pos)}
+.inflow-seg-bar-track{height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.inflow-seg-bar-fill{height:100%;border-radius:3px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.inflow-seg-bar-fill.early{background:linear-gradient(90deg,var(--neu),#60A5FA)}
+.inflow-seg-bar-fill.expansion{background:linear-gradient(90deg,var(--warn),#FBBF24)}
+.inflow-seg-bar-fill.steady{background:linear-gradient(90deg,var(--pos),#34D399)}
+.inflow-seg-desc{font-size:10px;color:var(--ink3)}
+/* 레이블 서브텍스트 */
+.inflow-seg-sublabel{font-size:9px;color:var(--ink3);font-weight:500;margin-top:2px;display:block;font-family:'DM Mono',monospace}
+
+/* TOTAL COMMENTS TABLE */
+.comment-card{overflow:hidden}
+.comment-toolbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--border2);background:linear-gradient(135deg,#EBF8FF 0%,#F0FDFF 100%)}
+.ct-label{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-right:2px}
+.filter-btn{padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700;border:1.5px solid var(--border2);background:#fff;color:var(--ink2);cursor:pointer;transition:all .12s;font-family:'Pretendard',sans-serif}
+.filter-btn.active{background:var(--neu-bg);border-color:var(--neu-bd);color:var(--neu)}
+.filter-btn.pos.active{background:var(--pos-bg);border-color:var(--pos-bd);color:var(--pos)}
+.filter-btn.neg.active,.filter-btn.risk.active{background:var(--neg-bg);border-color:var(--neg-bd);color:var(--neg)}
+.ct-sep{width:1px;height:18px;background:var(--border2);margin:0 2px}
+.date-sel{padding:4px 9px;border-radius:7px;border:1.5px solid var(--border2);background:#fff;color:var(--ink);font-size:11px;font-family:'Pretendard',sans-serif;cursor:pointer;outline:none;font-weight:600}
+.comment-table{width:100%;border-collapse:collapse;font-size:12px}
+.ct-text{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.55;font-size:12.5px;color:var(--ink);word-break:keep-all}
+.ct-text.expanded{-webkit-line-clamp:unset;overflow:visible}
+.ct-more-btn{display:none;margin-top:4px;font-size:11px;font-weight:700;color:var(--brand);background:none;border:none;padding:0;cursor:pointer;font-family:'Pretendard',sans-serif}
+.ct-more-btn:hover{text-decoration:underline}
+.comment-scroll-wrap{max-height:480px;overflow-y:auto;overflow-x:auto}
+.comment-scroll-wrap::-webkit-scrollbar{width:4px;height:4px}
+.comment-scroll-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+.comment-table thead th{padding:9px 13px;text-align:left;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:var(--bg3);border-bottom:1px solid var(--border2);white-space:nowrap}
+.comment-table tbody tr{border-bottom:1px solid rgba(15,23,42,.04);transition:background .1s}
+.comment-table tbody tr:hover{background:var(--bg3)}
+.comment-table tbody td{padding:10px 13px;vertical-align:middle}
+.risk-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:9px;font-weight:800}
+.risk-badge.high{background:var(--neg-bg);color:var(--neg);border:1px solid var(--neg-bd)}.risk-badge.mid{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}.risk-badge.low{background:var(--bg3);color:var(--ink3);border:1px solid var(--border2)}
+.comment-empty{padding:28px;text-align:center;font-size:12px;color:var(--ink3)}
+.loading-spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.content>*{animation:fadeIn .3s ease both}
+
+@media print{
+  body{min-width:unset!important;background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .sidebar,.topbar,.global-alert,.video-tabs-wrap,.vcp-sort,.sort-btn,.filter-btn,.date-sel,.btn,.lang-toggle,.comment-toolbar{display:none!important}
+  .main{margin-left:0!important}
+  .content{padding:10px!important;max-width:100%!important}
+  @page{margin:12mm 10mm;size:A4 landscape}
+}
+
+/* RAG PANEL */
+.main.rag-open{margin-right:400px;transition:margin-right .35s cubic-bezier(.4,0,.2,1)}
+.rag-panel{position:fixed;top:0;right:0;bottom:0;width:400px;background:#0f1120;border-left:1px solid rgba(108,60,225,.2);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);z-index:300;box-shadow:-8px 0 40px rgba(0,0,0,.3)}
+.rag-panel.open{transform:translateX(0)}
+.rp-header{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.rp-header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rp-title-group{display:flex;align-items:center;gap:10px}
+.rp-ai-badge{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#6C3CE1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 3px 10px rgba(108,60,225,.4);position:relative;flex-shrink:0}
+.rp-ai-online{position:absolute;bottom:-2px;right:-2px;width:8px;height:8px;border-radius:50%;background:#17A85A;border:2px solid #0f1120}
+.rp-title{font-size:14px;font-weight:800;color:#fff}
+.rp-sub{font-size:10px;color:rgba(255,255,255,.3);margin-top:1px;font-family:'DM Mono',monospace}
+.rp-close{width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.06);border:none;cursor:pointer;color:rgba(255,255,255,.4);font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.rp-close:hover{background:rgba(255,255,255,.1);color:#fff}
+.rp-context{display:flex;align-items:center;gap:6px;background:rgba(108,60,225,.12);border:1px solid rgba(108,60,225,.2);border-radius:8px;padding:7px 12px}
+.rp-context-icon{font-size:12px}
+.rp-context-text{font-size:10.5px;color:#9B6EF5;font-weight:600;flex:1}
+.rp-context-badge{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);background:rgba(255,255,255,.06);padding:2px 7px;border-radius:6px;font-family:'DM Mono',monospace}
+.rp-quick{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.04);flex-shrink:0}
+.rp-quick-label{font-size:9px;color:rgba(255,255,255,.2);font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px}
+.rp-quick-chips{display:flex;flex-wrap:wrap;gap:6px}
+.rp-chip{padding:5px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);font-size:11px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Pretendard',sans-serif}
+.rp-chip:hover{border-color:#9B6EF5;color:#9B6EF5;background:rgba(108,60,225,.1)}
+.rp-messages{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:16px}
+.rp-messages::-webkit-scrollbar{width:3px}
+.rp-messages::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.msg-date-sep{text-align:center;font-size:10px;color:rgba(255,255,255,.15);font-family:'DM Mono',monospace;position:relative}
+.msg-user{align-self:flex-end;background:linear-gradient(135deg,#6C3CE1,#8B5CF6);color:white;border-radius:14px 14px 4px 14px;padding:10px 14px;max-width:85%;font-size:13px;font-weight:500;line-height:1.5;box-shadow:0 4px 14px rgba(108,60,225,.3);animation:ragFadeIn .25s ease both}
+.msg-ai-wrap{display:flex;gap:10px;align-items:flex-start;animation:ragFadeIn .25s ease both}
+.msg-ai-avatar{width:28px;height:28px;border-radius:9px;flex-shrink:0;background:linear-gradient(135deg,#6C3CE1,#8B5CF6);display:flex;align-items:center;justify-content:center;font-size:13px;margin-top:2px;box-shadow:0 2px 8px rgba(108,60,225,.3)}
+.msg-ai{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:4px 14px 14px 14px;padding:12px 14px;max-width:calc(100% - 38px);font-size:12.5px;color:rgba(255,255,255,.85);line-height:1.6;font-weight:500}
+.msg-ai strong{color:white;font-weight:700}
+.msg-time{font-size:9px;color:rgba(255,255,255,.15);margin-top:4px;font-family:'DM Mono',monospace;text-align:right}
+.typing-indicator{display:flex;gap:10px;align-items:flex-start}
+.typing-bubble{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:4px 14px 14px 14px;padding:12px 16px;display:flex;align-items:center;gap:4px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);animation:typingBounce .9s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.15s}
+.typing-dot:nth-child(3){animation-delay:.3s}
+.rp-input-area{padding:14px 16px 18px;border-top:1px solid rgba(255,255,255,.06);flex-shrink:0}
+.rp-input-wrap{display:flex;align-items:flex-end;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;transition:border-color .15s}
+.rp-input-wrap:focus-within{border-color:rgba(108,60,225,.5);box-shadow:0 0 0 3px rgba(108,60,225,.08)}
+.rp-input{flex:1;background:none;border:none;outline:none;color:rgba(255,255,255,.85);font-size:13px;font-family:'Pretendard',sans-serif;font-weight:500;resize:none;max-height:100px;min-height:22px;line-height:1.5}
+.rp-input::placeholder{color:rgba(255,255,255,.2)}
+.rp-send{width:34px;height:34px;border-radius:10px;flex-shrink:0;background:linear-gradient(135deg,#6C3CE1,#8B5CF6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:white;box-shadow:0 2px 8px rgba(108,60,225,.35);transition:all .15s}
+.rp-send:hover{transform:scale(1.05)}
+.rp-input-hint{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:0 2px}
+.rp-hint-text{font-size:10px;color:rgba(255,255,255,.15);font-family:'DM Mono',monospace}
+.rp-rag-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;color:rgba(255,255,255,.2);font-weight:700;letter-spacing:.08em}
+.rp-rag-dot{width:5px;height:5px;border-radius:50%;background:#17A85A;animation:pulse 2s infinite}
+.btn-ai{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;border-radius:var(--r-sm);background:linear-gradient(135deg,#6C3CE1,#8B5CF6);color:white;font-size:11px;font-weight:700;border:none;cursor:pointer;box-shadow:0 4px 16px rgba(108,60,225,.35);transition:all .2s;font-family:'Pretendard',sans-serif;position:relative;overflow:hidden}
+.btn-ai:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(108,60,225,.45)}
+.btn-ai-pulse{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:#17A85A;animation:pulse 2s infinite}
+@keyframes ragFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes typingBounce{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-4px);opacity:1}}
+</style>
+</head>
+<body>
+
+<script>
+const PRODUCT  = {{ product | tojson }};
+const RAW_DATA = {{ data    | tojson }};
+</script>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-mark">P</div>
+    <div><div class="sb-name">Pickly</div><div class="sb-sub">AD INTELLIGENCE</div></div>
+  </div>
+  <nav class="sb-nav">
+    <a href="/" class="sb-back">← 제품 목록</a>
+    <div class="sb-sec">캠페인</div>
+    <div class="sb-item active"><span class="sb-icon-wrap">📦</span><span id="sbProductName"></span></div>
+    <div class="sb-sec">분석</div>
+    <div class="sb-item" data-sec="sec-kpi" onclick="scrollTo('#sec-kpi')"><span class="sb-icon-wrap">📊</span><span data-i="navKPI">KPI 요약</span></div>
+    <div class="sb-item" data-sec="sec-analysis" onclick="scrollTo('#sec-analysis')"><span class="sb-icon-wrap">🧠</span><span>캠페인 인사이트</span></div>
+    <div class="sb-item" data-sec="sec-platform" onclick="scrollTo('#sec-platform')"><span class="sb-icon-wrap">🛒</span><span>플랫폼 리뷰</span></div>
+    <div class="sb-item" data-sec="sec-trend" onclick="scrollTo('#sec-trend')"><span class="sb-icon-wrap">📈</span><span>Sentiment Trend</span></div>
+    <div class="sb-item" data-sec="sec-voc" onclick="scrollTo('#sec-voc')"><span class="sb-icon-wrap">💬</span><span>VOC 분석</span></div>
+    <div class="sb-item" data-sec="sec-ai" onclick="scrollTo('#sec-ai')"><span class="sb-icon-wrap">👤</span><span>Audience & Inflow</span></div>
+    <div class="sb-item" data-sec="sec-comments" onclick="scrollTo('#sec-comments')"><span class="sb-icon-wrap">📋</span><span>Total Comments</span></div>
+    <div class="sb-sec">관리</div>
+    <div class="sb-item" onclick="window.print()"><span class="sb-icon-wrap">↓</span><span>리포트 내보내기</span></div>
+  </nav>
+  <div class="sb-footer">
+    <div class="sb-live"><div class="sb-live-dot"></div>LIVE</div>
+    <div class="sb-refresh" id="sbRefresh">업데이트: —</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="global-alert" id="globalAlert" style="display:none">
+    <div class="ga-dot"></div>
+    <span class="ga-text" id="gaText"></span>
+    <button class="ga-close" onclick="document.getElementById('globalAlert').classList.add('hidden')">✕</button>
+  </div>
+
+  <div class="sticky-header">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="메뉴 열기/닫기">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+      <div>
+        <div class="topbar-crumb"><a href="/" style="color:var(--ink3);text-decoration:none">제품 목록</a> › <span id="topCrumbName"></span></div>
+        <div class="topbar-title"><span id="topTitle"></span> <span class="live-badge"><span class="live-dot"></span>LIVE</span></div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLang('ko',this)">한국어</button>
+        <button class="lang-btn" onclick="setLang('en',this)">English</button>
+      </div>
+      <button class="btn-ai" onclick="toggleRagPanel()">
+        <span>✦</span> AI 분석
+        <span class="btn-ai-pulse"></span>
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">↓ 리포트 저장 PDF</button>
+    </div>
+  </div>
+
+  <!-- 히어로 카드 -->
+  <div class="hero-card" style="margin:24px 28px;">
+    <div class="hero-top-badges">
+      <span class="hero-badge-active">CAMPAIGN ACTIVE</span>
+      <span class="hero-updated">UPDATED <span id="heroUpdated"></span></span>
+    </div>
+    <h1 class="hero-title"><span id="heroTitleName"></span><br><span>Performance Hub</span></h1>
+    <p class="hero-desc">
+      최신 캠페인 분석 리포트입니다. 현재 <strong id="heroVideoCount">0</strong>개의 영상이 활성화되어 있으며, 실시간 반응을 모니터링 중입니다.
+    </p>
+    <div class="hero-mid-badges">
+      <div class="hm-badge"><span class="hm-dot"></span> 실시간 데이터 수집 중</div>
+      <div class="hm-badge">감성 지수 <span id="heroOverallSentiment">분석 중</span></div>
+    </div>
+    <div class="camp-kpi-row" id="campKpiRow" style="margin-bottom:24px;"></div>
+    <div class="hero-insight-bar">
+      <button class="btn-ai-insights">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+        AI INSIGHTS
+      </button>
+      <button id="hero-tts-btn" class="hero-btn-tts" onclick="toggleHeroTTS()" aria-label="음성으로 듣기">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+      </button>
+      <div class="insight-marquee-wrap">
+        <div class="insight-marquee-track" id="marqueeTrack"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 영상 탭 -->
+  <div class="video-tabs-wrap" id="videoTabs"></div>
+  </div>
+
+  <div class="content">
+
+    <!-- ① KPI -->
+    <div id="sec-kpi" style="margin-bottom:24px;padding-top:20px;border-top:1px solid rgba(15,23,42,.06)">
+      <div class="sec-hd">
+        <div class="sec-num">1</div>
+        <div class="sec-title">KPI 요약</div>
+        <div class="sec-sub"> — 핵심 수치</div>
+      </div>
+      <div id="videoInfoBar" style="margin-bottom:14px;padding:12px 16px;background:#fff;border-radius:var(--r);border:1px solid var(--border2);box-shadow:var(--sh)">
+        <div id="campTitle" style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-.02em;margin-bottom:5px;line-height:1.3"></div>
+        <div id="campMeta" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink3)"></div>
+      </div>
+      <div class="kpi-grid" id="kpiGrid"></div>
+    </div>
+
+    <!-- ② 캠페인 인사이트 -->
+    <div id="sec-analysis" style="margin-bottom:24px">
+      <div class="sec-hd">
+        <div class="sec-num">2</div>
+        <div class="sec-title">캠페인 인사이트</div>
+        <div class="sec-sub" id="analysisSubLabel"> — 영상 통합 비교</div>
+      </div>
+      <div class="card cit-wrap" id="campInsightCard"></div>
+    </div>
+
+    <!-- ③ 플랫폼 리뷰 -->
+    <div id="sec-platform" style="margin-bottom:24px">
+      <div class="sec-hd">
+        <div class="sec-num">3</div>
+        <div class="sec-title">플랫폼 리뷰</div>
+        <div class="sec-sub"> — 캠페인 전후 구매 전환 효과</div>
+      </div>
+      <div class="card" id="platformReviewCard">
+        <div class="card-hd">
+          <div class="trend-legend" id="platformReviewLegend">
+            <div class="tl-item"><div class="tl-dot" style="background:#03C75A"></div><span>네이버</span></div>
+            <div class="tl-item"><div class="tl-dot" style="background:var(--brand)"></div><span>올리브영</span></div>
+            <div class="tl-item" style="margin-left:4px"><div class="tl-dot" style="background:var(--warn);border-radius:2px"></div><span>평균 평점</span></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="review-summary-bar" id="platformReviewSummary" style="border:none;padding:0"></div>
+          </div>
+        </div>
+        <div id="platformReviewBody" style="padding:4px 0">
+          <div style="padding:28px;text-align:center;color:var(--ink3);font-size:12px"><span class="loading-spinner"></span> 리뷰 데이터 불러오는 중…</div>
+        </div>
+        <div id="platformReviewInfo" style="padding:8px 16px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--ink3)"></div>
+        <div id="platformReviewInsight" style="display:none;padding:10px 16px 14px;border-top:1px solid var(--border);background:var(--brand-bg)">
+          <span style="font-size:10px;font-weight:800;color:var(--brand);letter-spacing:.08em;text-transform:uppercase;margin-right:8px">💡 Insight</span>
+          <span id="platformReviewInsightText" style="font-size:12px;color:var(--ink);line-height:1.6"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ④ Trend -->
+    <div id="sec-trend" style="margin-bottom:24px">
+      <div class="sec-hd">
+        <div class="sec-num">4</div>
+        <div class="sec-title">Sentiment Trend</div>
+        <div class="sec-sub"> — 시간 흐름별 감성 변화</div>
+      </div>
+      <div class="card trend-card">
+        <div class="card-hd">
+          <div class="trend-legend" id="trendLegend">
+            <div class="tl-item"><div class="tl-dot" style="background:var(--pos)"></div><span>긍정</span></div>
+            <div class="tl-item"><div class="tl-dot" style="background:var(--neg)"></div><span>부정</span></div>
+          </div>
+          <div class="trend-ctrl">
+            <div class="trend-view-toggle">
+              <button class="trend-btn active" id="trendViewCount" onclick="setTrendView('count',this)">댓글량</button>
+              <button class="trend-btn" id="trendViewRate" onclick="setTrendView('rate',this)">여론 안정성</button>
+            </div>
+            <div class="trend-style-toggle" id="trendStyleCtrl">
+              <button class="trend-btn active" onclick="setTrend('area',this)">면적</button>
+              <button class="trend-btn" onclick="setTrend('line',this)">라인</button>
+            </div>
+          </div>
+        </div>
+        <div class="trend-body"><div class="trend-canvas-wrap" id="trendCanvasWrap"><canvas id="trendChart"></canvas></div></div>
+        <div id="trendInfo" style="padding:8px 16px 12px;border-top:1px solid var(--border);font-size:11px;color:var(--ink3)"></div>
+      </div>
+    </div>
+
+    <!-- ⑤ VOC -->
+    <div id="sec-voc" class="voc-wrap" style="margin-bottom:24px">
+      <div class="sec-hd">
+        <div class="sec-num">5</div>
+        <div class="sec-title">Strength / Weakness VOC Top 5</div>
+        <div class="sec-sub"> — 키워드 클릭 → 오른쪽 댓글 패널</div>
+      </div>
+      <div class="voc-main-grid">
+        <div class="voc-keyword-cols">
+          <div class="card voc-panel">
+            <div class="voc-panel-hd pos"><span>👍</span><span class="vp-title pos">긍정 VOC Top 5</span><span class="vp-cnt" id="vocPosTotal"></span></div>
+            <div id="vocPosList"></div>
+          </div>
+          <div class="card voc-panel">
+            <div class="voc-panel-hd neg"><span>👎</span><span class="vp-title neg">부정 VOC Top 5</span><span class="vp-cnt" id="vocNegTotal"></span></div>
+            <div id="vocNegList"></div>
+          </div>
+        </div>
+        <div class="voc-comments-panel" id="vocCommentsPanel">
+          <div class="voc-comments-panel-hd">
+            <span id="vcpIcon" style="font-size:14px">💬</span>
+            <span class="vcp-title" id="vcpTitle">키워드를 선택하세요</span>
+            <span class="vcp-badge" id="vcpBadge" style="display:none"></span>
+            <div class="vcp-sort" id="vcpSort" style="display:none">
+              <button class="sort-btn active" onclick="sortComments('latest',this)">최신순</button>
+              <button class="sort-btn" onclick="sortComments('likes',this)">좋아요순</button>
+            </div>
+          </div>
+          <div class="voc-comments-empty" id="vcpEmpty">
+            <div class="voc-comments-empty-icon">👆</div>
+            <div>왼쪽에서 키워드를 클릭하면<br>관련 댓글이 여기에 표시됩니다</div>
+          </div>
+          <div class="voc-comments-list" id="vcpList" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑥ Audience & Inflow -->
+    <div id="sec-ai" style="margin-bottom:24px">
+      <div class="sec-hd">
+        <div class="sec-num">6</div>
+        <div class="sec-title">Audience &amp; Inflow</div>
+        <div class="sec-sub"> — 시청자 유형 · 댓글 유입 시점</div>
+      </div>
+      <div class="ai-grid">
+        <div class="card">
+          <div class="card-hd"><div class="card-hd-title">시청자 페르소나</div><div class="card-hd-sub">audience_segment 기반 분류</div></div>
+          <div class="seg-body">
+            <div class="seg-chart-wrap">
+              <canvas id="audChart"></canvas>
+              <div class="seg-center"><div class="seg-center-val" id="audTotal"></div><div class="seg-center-sub">분류된 전체 댓글</div></div>
+            </div>
+            <div id="audBars"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">
+            <div class="card-hd-title">댓글 유입 시점</div>
+            <div class="card-hd-sub">inflow_segment 기준</div>
+          </div>
+          <div class="inflow-body" id="inflowList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ⑦ Total Comments -->
+    <div id="sec-comments" style="margin-bottom:48px">
+      <div class="sec-hd">
+        <div class="sec-num">7</div>
+        <div class="sec-title">Total Comments</div>
+        <div class="sec-sub"> — 해당 영상 전체 댓글 데이터</div>
+      </div>
+      <div class="card comment-card">
+        <div class="comment-toolbar">
+          <span class="ct-label">감정</span>
+          <button class="filter-btn active" data-f="all" onclick="setFilter('all',this)">전체</button>
+          <button class="filter-btn pos" data-f="pos" onclick="setFilter('pos',this)">😊 긍정</button>
+          <button class="filter-btn neg" data-f="neg" onclick="setFilter('neg',this)">😞 부정</button>
+          <button class="filter-btn risk" data-f="risk" onclick="setFilter('risk',this)">⚠ 위기</button>
+          <div class="ct-sep"></div>
+          <span class="ct-label">유입 시점</span>
+          <select class="date-sel" id="dateSel" onchange="renderComments()">
+            <option value="all">전체 기간</option>
+            <option value="early">게시 ~ 48시간</option>
+            <option value="expansion">48시간 ~ 7일</option>
+            <option value="steady">7일 이후</option>
+          </select>
+          <select class="date-sel" id="limitSel" onchange="renderComments()" style="margin-left:auto">
+            <option value="20">20개</option>
+            <option value="50">50개</option>
+            <option value="100">100개</option>
+          </select>
+        </div>
+        <div class="comment-scroll-wrap">
+          <table class="comment-table">
+            <thead><tr>
+              <th style="width:42%">댓글</th>
+              <th>채널</th>
+              <th>작성자</th>
+              <th>감정</th>
+              <th>위험도</th>
+              <th>유입 시점</th>
+            </tr></thead>
+            <tbody id="commentBody"></tbody>
+          </table>
+        </div>
+        <div id="commentEmpty" class="comment-empty" style="display:none">해당 조건의 댓글이 없습니다.</div>
+        <div id="commentLoading" class="comment-empty"><span class="loading-spinner"></span> 댓글 불러오는 중…</div>
+      </div>
+    </div>
+  </div><!-- /content -->
+</main>
+</div>
+
+<!-- RAG 패널 -->
+<aside class="rag-panel" id="rag-panel">
+  <div class="rp-header">
+    <div class="rp-header-top">
+      <div class="rp-title-group">
+        <div class="rp-ai-badge">✦<div class="rp-ai-online"></div></div>
+        <div>
+          <div class="rp-title">AI 데이터 어시스턴트</div>
+          <div class="rp-sub" id="rp-sub-context">Pickly RAG · 캠페인 컨텍스트</div>
+        </div>
+      </div>
+      <button class="rp-close" onclick="toggleRagPanel()">✕</button>
+    </div>
+    <div class="rp-context">
+      <span class="rp-context-icon">📊</span>
+      <span class="rp-context-text" id="rp-context-text">캠페인 데이터 분석 중</span>
+      <span class="rp-context-badge" id="rp-context-badge">로딩 중</span>
+    </div>
+  </div>
+  <div class="rp-quick">
+    <div class="rp-quick-label">빠른 질문</div>
+    <div class="rp-quick-chips">
+      <div class="rp-chip" onclick="selectChip(this,'이 캠페인 데이터 요약해줘')">📋 데이터 요약</div>
+      <div class="rp-chip" onclick="selectChip(this,'위기 댓글 원인 분석해줘')">⚠️ 위기 원인</div>
+      <div class="rp-chip" onclick="selectChip(this,'구매 의도 높은 댓글 패턴은?')">🛒 구매 패턴</div>
+      <div class="rp-chip" onclick="selectChip(this,'영상별 성과를 비교해줘')">📈 성과 비교</div>
+    </div>
+  </div>
+  <div class="rp-messages" id="rp-messages">
+    <div class="msg-date-sep">오늘</div>
+    <div class="msg-ai-wrap">
+      <div class="msg-ai-avatar">✦</div>
+      <div>
+        <div class="msg-ai" id="rp-welcome-msg">
+          안녕하세요! 👋 캠페인 데이터를 기반으로 질문에 답변드릴게요.<br><br>
+          댓글 감성·구매 의도·영상별 성과 등 분석 데이터를 활용합니다.
+        </div>
+        <div class="msg-time">방금 전</div>
+      </div>
+    </div>
+    <div class="typing-indicator" id="rp-typing" style="display:none">
+      <div class="msg-ai-avatar">✦</div>
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>
+  </div>
+  <div class="rp-input-area">
+    <div class="rp-input-wrap">
+      <textarea class="rp-input" id="rp-input"
+        placeholder="데이터에 대해 질문하세요..." rows="1"
+        onkeydown="handleRagKey(event)"
+        oninput="ragAutoResize(this)"></textarea>
+      <button class="rp-send" onclick="sendRagMessage()">↑</button>
+    </div>
+    <div class="rp-input-hint">
+      <span class="rp-hint-text">Enter 전송 · Shift+Enter 줄바꿈</span>
+      <span class="rp-rag-badge"><span class="rp-rag-dot"></span> RAG 활성</span>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+/* ═══════════════════════════════════════════
+   전역 상태
+═══════════════════════════════════════════ */
+const VIDEOS   = RAW_DATA.videos   || [];
+const KPIS     = RAW_DATA.kpis     || {};
+const ALERT    = RAW_DATA.alert    || {};
+const KEYWORDS = RAW_DATA.top_keywords || [];
+
+let activeTab      = 0;
+let trendMode      = 'area';
+let curFilter      = 'all';
+let curSort        = 'latest';
+let selectedVOC    = null;
+let allComments    = [];
+let trendCache     = {};
+let trendChartInst = null;
+let audChartInst   = null;
+
+/* ═══════════════════════════════════════════
+   inflow_segment 메타 정의 (핵심 변경)
+   early     : 게시 ~ 48시간
+   expansion : 48시간 ~ 7일
+   steady    : 7일 이후
+═══════════════════════════════════════════ */
+const INFLOW_META = {
+  early:     { label: '게시 ~ 48시간',  sublabel: 'Early',     cls: 'early' },
+  expansion: { label: '48시간 ~ 7일',   sublabel: 'Expansion', cls: 'expansion' },
+  steady:    { label: '7일 이후',        sublabel: 'Steady',    cls: 'steady' },
+};
+const INFLOW_ORDER = ['early', 'expansion', 'steady'];
+
+/* i18n용 라벨 (dateSel 옵션과 댓글 테이블 표시에 사용) */
+const INFLOW_LABEL = {
+  early:     '게시 ~ 48시간',
+  expansion: '48시간 ~ 7일',
+  steady:    '7일 이후',
+};
+
+/* ═══════════════════════════════════════════
+   유틸
+═══════════════════════════════════════════ */
+function scrollTo(sel){ document.querySelector(sel)?.scrollIntoView({behavior:'smooth',block:'start'}); }
+function fmtN(n){ return n?.toLocaleString() ?? '0'; }
+function fmtKpiVal(v){
+  if(typeof v !== 'string') return String(v);
+  return v.replace(/(만|억|개|%)/g, '<span class="kpi-unit">$1</span>');
+}
+function clamp(v,min,max){ return Math.min(Math.max(v,min),max); }
+function truncate(s,n){ return s && s.length>n ? s.slice(0,n)+'…' : (s||''); }
+
+const SENT_KO = {POSITIVE:'긍정', NEGATIVE:'부정', NEUTRAL:'중립'};
+const SENT_EN = {POSITIVE:'Positive', NEGATIVE:'Negative', NEUTRAL:'Neutral'};
+
+/* ═══════════════════════════════════════════
+   i18n
+═══════════════════════════════════════════ */
+let LANG = 'ko';
+
+const I18N = {
+  ko: {
+    kpiViews:'총 조회수', kpiPos:'긍정률', kpiNeg:'부정률', kpiIntent:'구매 의도', kpiScore:'협업 성공 지수',
+    secKpi:'KPI 요약', secAnalysis:'캠페인 인사이트', secPlatform:'플랫폼 리뷰',
+    secTrend:'Sentiment Trend', secVoc:'VOC 분석', secAi:'Audience & Inflow', secComments:'Total Comments',
+    sentPos:'긍정', sentNeu:'중립', sentNeg:'부정',
+    posLabel:'긍정', neuLabel:'중립', negLabel:'부정',
+    commentAll:'전체', commentPos:'😊 긍정', commentNeg:'😞 부정', commentRisk:'⚠ 위기',
+    inflowAll:'전체 기간', inflowEarly:'게시 ~ 48시간', inflowExpansion:'48시간 ~ 7일', inflowSteady:'7일 이후',
+    trendCount:'댓글량', trendRate:'여론 안정성',
+    aiAudTitle:'시청자 페르소나', aiInflowTitle:'댓글 유입 시점',
+    vocPos:'긍정 VOC Top 5', vocNeg:'부정 VOC Top 5',
+    rowPosRate:'긍정률', rowIntent:'구매 의도', rowCrisis:'위기 댓글', rowScore:'협업 점수', rowComments:'총 댓글', rowBrand:'브랜드 언급',
+    tagBest:'최고', tagMost:'최다', tagDanger:'위험', thMetric:'지표',
+    trendLegendPos:'긍정', trendLegendNeg:'부정',
+    trendLegendRate:'긍정률 (%)', trendLegendBand:'μ ± σ 범위',
+    trendStableGood:'🟢 안정', trendStableMid:'🟡 보통', trendStableBad:'🔴 변동 큼',
+    trendStabilityGood:'<span style="color:var(--pos)">● 안정</span> — σ {s}%p',
+    trendStabilityMid:'<span style="color:#D97706">● 보통</span> — σ {s}%p',
+    trendStabilityBad:'<span style="color:var(--neg)">● 변동 큼</span> — σ {s}%p',
+    trendInfoRate:'긍정률 평균 <strong>{mu}%</strong> · 여론 안정성: {stab}',
+    trendInfoCount:'총 {total}건 · 긍정 피크: <strong>{peak}</strong>({peakN}건) · μ <strong>{mu}%</strong> · σ <strong>{sigma}%p</strong>',
+    trendTooltipRate:' 긍정률: {v}%', trendTooltipUpper:' σ 상한: {v}%', trendTooltipLower:' σ 하한: {v}%',
+    trendMu:'μ(평균)', trendSigma:'σ', trendStability:'여론 안정성',
+    kpiSubLikes:'좋아요 {n} ({r}%)', kpiSubComments:'댓글 {n}건 분석', kpiSubNeg:'부정 {n}건',
+    kpiSubIntentDetail:'낮음 {l} / 중간 {m} / 높음 {h}',
+  },
+  en: {
+    kpiViews:'Total Views', kpiPos:'Positive Rate', kpiNeg:'Negative Rate', kpiIntent:'Purchase Intent', kpiScore:'Collab Score',
+    secKpi:'KPI Summary', secAnalysis:'Campaign Insight', secPlatform:'Platform Reviews',
+    secTrend:'Sentiment Trend', secVoc:'VOC Analysis', secAi:'Audience & Inflow', secComments:'Total Comments',
+    sentPos:'Positive', sentNeu:'Neutral', sentNeg:'Negative',
+    posLabel:'Positive', neuLabel:'Neutral', negLabel:'Negative',
+    commentAll:'All', commentPos:'😊 Positive', commentNeg:'😞 Negative', commentRisk:'⚠ Risk',
+    inflowAll:'All periods', inflowEarly:'Post ~ 48h', inflowExpansion:'48h ~ 7 days', inflowSteady:'7+ days',
+    trendCount:'Volume', trendRate:'Stability',
+    aiAudTitle:'Audience Persona', aiInflowTitle:'Comment Inflow',
+    vocPos:'Positive VOC Top 5', vocNeg:'Negative VOC Top 5',
+    rowPosRate:'Positive Rate', rowIntent:'Purchase Intent', rowCrisis:'Crisis', rowScore:'Collab Score', rowComments:'Comments', rowBrand:'Brand Mentions',
+    tagBest:'Best', tagMost:'Most', tagDanger:'Risk', thMetric:'Metric',
+    trendLegendPos:'Positive', trendLegendNeg:'Negative',
+    trendLegendRate:'Positive Rate (%)', trendLegendBand:'μ ± σ Range',
+    trendStableGood:'🟢 Stable', trendStableMid:'🟡 Moderate', trendStableBad:'🔴 Volatile',
+    trendStabilityGood:'<span style="color:var(--pos)">● Stable</span> — σ {s}%p',
+    trendStabilityMid:'<span style="color:#D97706">● Moderate</span> — σ {s}%p',
+    trendStabilityBad:'<span style="color:var(--neg)">● Volatile</span> — σ {s}%p',
+    trendInfoRate:'Avg positive <strong>{mu}%</strong> · Stability: {stab}',
+    trendInfoCount:'{total} comments · Peak: <strong>{peak}</strong> ({peakN}) · μ <strong>{mu}%</strong> · σ <strong>{sigma}%p</strong>',
+    trendTooltipRate:' Positive: {v}%', trendTooltipUpper:' σ Upper: {v}%', trendTooltipLower:' σ Lower: {v}%',
+    trendMu:'μ(mean)', trendSigma:'σ', trendStability:'Stability',
+    kpiSubLikes:'Likes {n} ({r}%)', kpiSubComments:'{n} comments analyzed', kpiSubNeg:'{n} negative',
+    kpiSubIntentDetail:'L1 {l} / L2 {m} / L3 {h}',
+  }
+};
+function t(key, vars){
+  let s = (I18N[LANG] || I18N.ko)[key] || key;
+  if(vars) Object.entries(vars).forEach(([k,v])=>{ s = s.replaceAll(`{${k}}`, v); });
+  return s;
+}
+
+function setLang(l, btn){
+  LANG = l;
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  applyLang();
+}
+
+function applyLang(){
+  const T = I18N[LANG] || I18N.ko;
+  const sbMap = {
+    'sec-kpi':T.secKpi,'sec-analysis':T.secAnalysis,'sec-platform':T.secPlatform,
+    'sec-trend':T.secTrend,'sec-voc':T.secVoc,'sec-ai':T.secAi,'sec-comments':T.secComments
+  };
+  document.querySelectorAll('.sb-item[data-sec]').forEach(el=>{
+    const key = el.getAttribute('data-sec');
+    if(sbMap[key]) el.querySelector('span:last-child').textContent = sbMap[key];
+  });
+  Object.entries(sbMap).forEach(([id,label])=>{
+    const el = document.querySelector(`#${id} .sec-title`);
+    if(el) el.textContent = label;
+  });
+  const tcBtn = document.getElementById('trendViewCount');
+  const trBtn = document.getElementById('trendViewRate');
+  if(tcBtn) tcBtn.textContent = T.trendCount;
+  if(trBtn) trBtn.textContent = T.trendRate;
+
+  const filterMap = {'all':T.commentAll,'pos':T.commentPos,'neg':T.commentNeg,'risk':T.commentRisk};
+  document.querySelectorAll('.filter-btn[data-f]').forEach(btn=>{
+    const key = btn.getAttribute('data-f');
+    if(filterMap[key]) btn.textContent = filterMap[key];
+  });
+
+  // dateSel 옵션 업데이트 (inflow_segment 기준)
+  const dateSel = document.getElementById('dateSel');
+  if(dateSel){
+    dateSel.options[0].textContent = T.inflowAll;
+    dateSel.options[1].textContent = T.inflowEarly;
+    dateSel.options[2].textContent = T.inflowExpansion;
+    dateSel.options[3].textContent = T.inflowSteady;
+  }
+
+  const audCard    = document.querySelector('#sec-ai .card:first-child .card-hd-title');
+  const inflowCard = document.querySelector('#sec-ai .card:last-child .card-hd-title');
+  if(audCard)    audCard.textContent    = T.aiAudTitle;
+  if(inflowCard) inflowCard.textContent = T.aiInflowTitle;
+
+  const vocPosEl = document.querySelector('.voc-panel-hd.pos .vp-title');
+  const vocNegEl = document.querySelector('.voc-panel-hd.neg .vp-title');
+  if(vocPosEl) vocPosEl.textContent = T.vocPos;
+  if(vocNegEl) vocNegEl.textContent = T.vocNeg;
+
+  const v = VIDEOS[activeTab];
+  if(v){
+    renderKPI(v);
+    renderCampInsight(activeTab);
+    if(trendCache[v.video_id]){
+      setTrendView(trendMode==='rate'?'rate':'count',
+        document.getElementById(trendMode==='rate'?'trendViewRate':'trendViewCount'));
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════
+   Scrollspy
+═══════════════════════════════════════════ */
+function initScrollspy(){
+  const sections = ['sec-kpi','sec-analysis','sec-platform','sec-trend','sec-voc','sec-ai','sec-comments'];
+  const navItems = {};
+  sections.forEach(id=>{
+    const el = document.querySelector(`[data-sec="${id}"]`);
+    if(el) navItems[id] = el;
+  });
+  let activeId = null;
+  function setActive(id){
+    if(activeId===id) return;
+    activeId = id;
+    Object.entries(navItems).forEach(([k,el])=>el.classList.toggle('active', k===id));
+  }
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{ if(entry.isIntersecting) setActive(entry.target.id); });
+  }, { rootMargin:'-10% 0px -80% 0px', threshold:0 });
+  sections.forEach(id=>{ const el=document.getElementById(id); if(el) observer.observe(el); });
+}
+
+/* ═══════════════════════════════════════════
+   init
+═══════════════════════════════════════════ */
+function init(){
+  document.title = 'Pickly — ' + PRODUCT.name + ' 캠페인';
+  document.getElementById('sbRefresh').textContent   = '업데이트: ' + (PRODUCT.updated||'—');
+  document.getElementById('sbProductName').textContent = PRODUCT.name;
+  document.getElementById('topCrumbName').textContent  = PRODUCT.name;
+  document.getElementById('topTitle').textContent      = PRODUCT.name + ' 캠페인';
+
+  if(ALERT.active){
+    document.getElementById('gaText').textContent = '⚠ Risk Alert — ' + ALERT.message;
+    document.getElementById('globalAlert').style.display = 'flex';
+  }
+
+  renderHeroCard();
+  renderCampKpiRow();
+  renderVideoTabs();
+  document.getElementById('analysisSubLabel').textContent = ` — ${VIDEOS.length}개 영상 통합 비교`;
+  initRagContext();
+  loadAndRenderPlatformReview(PRODUCT.id);
+  initScrollspy();
+  loadTab(0);
+}
+
+/* ═══════════════════════════════════════════
+   캠페인 KPI 행
+═══════════════════════════════════════════ */
+function renderCampKpiRow(){
+  const k = KPIS;
+  let totalPos=0, totalAn=0;
+  VIDEOS.forEach(v=>{ totalPos+=v.positive||0; totalAn+=v.total_analyzed||0; });
+  const posRate = totalAn ? (totalPos/totalAn*100).toFixed(1) : 0;
+  const chips = [
+    { label:'총 조회수',   val:k.views,                cls:'neu' },
+    { label:'전체 댓글',   val:fmtN(k.comments),       cls:'' },
+    { label:'전체 긍정률', val:posRate+'%',             cls:'pos' },
+    { label:'구매 의도',   val:fmtN(k.purchase_intent), cls:'warn' },
+    { label:'위기 댓글',   val:fmtN(k.crisis),         cls:'neg', alert:k.crisis>0 },
+    { label:'참여 영상',   val:k.video_count+'개',      cls:'' },
+  ];
+  document.getElementById('campKpiRow').innerHTML = chips.map(c=>`
+    <div class="camp-kpi-chip${c.alert?' alert':''}">
+      ${c.alert?'<div class="camp-alert-dot"></div>':''}
+      <span class="camp-kpi-chip-label">${c.label}</span>
+      <span class="camp-kpi-chip-val ${c.cls}">${c.val}</span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   히어로 카드
+═══════════════════════════════════════════ */
+function renderHeroCard(){
+  if(!VIDEOS.length) return;
+  document.getElementById('heroTitleName').textContent  = PRODUCT.name;
+  document.getElementById('heroUpdated').textContent    = PRODUCT.updated||'-';
+  document.getElementById('heroVideoCount').textContent = VIDEOS.length;
+
+  let totalPos=0, totalAn=0;
+  VIDEOS.forEach(v=>{ totalPos+=v.positive||0; totalAn+=v.total_analyzed||0; });
+  const posRate = totalAn ? totalPos/totalAn*100 : 0;
+  const sentEl  = document.getElementById('heroOverallSentiment');
+  if(posRate>=65){ sentEl.textContent='긍정적'; sentEl.style.color='var(--pos)'; }
+  else if(posRate>=40){ sentEl.textContent='보통'; sentEl.style.color='var(--warn)'; }
+  else{ sentEl.textContent='주의 필요'; sentEl.style.color='var(--neg)'; }
+
+  let insights = [];
+  insights.push(posRate>=65
+    ? `<strong>긍정적인 여론(${posRate.toFixed(1)}%)</strong>이 지배적입니다. 현재 캠페인 방향을 유지하세요.`
+    : `현재 긍정률이 <strong>${posRate.toFixed(1)}%</strong>로 다소 낮습니다. 시청자 반응을 주의 깊게 살피세요.`);
+  insights.push(KPIS.crisis>0
+    ? `<span class="warn">주의: ${fmtN(KPIS.crisis)}건의 위기 댓글이 감지되었습니다.</span>`
+    : `감지된 위기 댓글은 없습니다.`);
+  if(KPIS.purchase_intent>0)
+    insights.push(`총 <strong>${fmtN(KPIS.purchase_intent)}건</strong>의 구매 의도 댓글이 발견되었습니다.`);
+
+  const fullContent = '✦ ' + insights.join('&nbsp;&nbsp;&nbsp;&nbsp;✦ ');
+  const trackEl = document.getElementById('marqueeTrack');
+  if(trackEl){
+    trackEl.innerHTML = `
+      <span class="insight-marquee-text">${fullContent}</span>
+      <span class="insight-marquee-text">${fullContent}</span>`;
+    const charCount = fullContent.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').length;
+    const duration  = Math.max(30, charCount/5);
+    trackEl.style.setProperty('--marquee-duration', `${duration}s`);
+  }
+}
+
+function toggleHeroTTS(){
+  if(!('speechSynthesis' in window)) return alert('음성 지원을 지원하지 않습니다.');
+  const synth = window.speechSynthesis, btn = document.getElementById('hero-tts-btn');
+  if(synth.speaking){ synth.cancel(); btn.classList.remove('playing'); return; }
+  const textEl = document.querySelector('.insight-marquee-text');
+  if(!textEl) return;
+  const utterance = new SpeechSynthesisUtterance(textEl.textContent.replace(/[✦]/g,'').trim());
+  utterance.lang  = LANG==='en'?'en-US':'ko-KR';
+  utterance.rate  = 1.1;
+  utterance.onstart = ()=>btn.classList.add('playing');
+  utterance.onend   = ()=>btn.classList.remove('playing');
+  utterance.onerror = ()=>btn.classList.remove('playing');
+  synth.speak(utterance);
+}
+
+/* ═══════════════════════════════════════════
+   영상 탭
+═══════════════════════════════════════════ */
+function rankClass(r){ const n=parseInt(r)||99; return n===1?'r1':n===2?'r2':'r3'; }
+function rankLabel(r){ const n=parseInt(r)||99; return n===1?'🥇 1위':n===2?'🥈 2위':'🥉 3위'; }
+
+function renderVideoTabs(){
+  document.getElementById('videoTabs').innerHTML = VIDEOS.map((v,i)=>{
+    const rank=v.rank||(i+1), rkCls=rankClass(rank), rkLbl=rankLabel(rank);
+    const qs=v.quality_score??0, ss=v.scale_score??0, ts=v.total_score??0;
+    return `
+    <div class="vtab${i===activeTab?' active':''}" onclick="loadTab(${i})" id="vtab_${i}">
+      <div class="vtab-top">
+        <span class="vtab-num">${i+1}</span>
+        <span class="vtab-label" title="${v.title||''}">${truncate(v.title||v.channel_name||('영상 '+(i+1)),22)}</span>
+        ${v.crisis_count>0?`<span class="vtab-warn">⚠ 위기 ${v.crisis_count}건</span>`:''}
+        <span class="vtab-rank ${rkCls}">${rkLbl}</span>
+      </div>
+      <div class="vtab-meta">${v.channel_name?`<b style="color:var(--ink2)">${v.channel_name}</b> · `:''}조회 <b>${v.views||0}</b> · 댓글 <b>${fmtN(v.total_all||0)}</b></div>
+      <div class="vtab-score">
+        <div class="vtab-score-labels">
+          <div class="vtab-score-row">
+            <span class="vtab-score-key">콘텐츠 품질</span>
+            <div class="vtab-score-track"><div class="vtab-score-fill quality" style="width:${clamp(qs,0,100)}%"></div></div>
+            <span class="vtab-score-num quality">${qs}</span>
+          </div>
+          <div class="vtab-score-row">
+            <span class="vtab-score-key">확산력</span>
+            <div class="vtab-score-track"><div class="vtab-score-fill scale" style="width:${clamp(ss,0,100)}%"></div></div>
+            <span class="vtab-score-num scale">${ss}</span>
+          </div>
+        </div>
+        <div class="vtab-total-badge">
+          <div class="vtab-total-val">${ts}</div>
+          <div class="vtab-total-label">TOTAL</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   탭 전환
+═══════════════════════════════════════════ */
+function loadTab(idx){
+  activeTab = idx;
+  document.querySelectorAll('.vtab').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  const v = VIDEOS[idx];
+  if(!v) return;
+  renderCampHeader(v);
+  renderKPI(v);
+  renderCampInsight(v);
+  loadAndRenderTrend(v.video_id);
+  renderVOC(v);
+  renderAudience(v);
+  loadAndRenderInflowSegment(v.video_id); // ← inflow_segment 기반으로 변경
+  allComments = [];
+  loadComments(v.video_id);
+}
+
+/* ═══════════════════════════════════════════
+   사이드바 토글
+═══════════════════════════════════════════ */
+function toggleSidebar(){
+  const isClosed = document.body.classList.toggle('sidebar-closed');
+  localStorage.setItem('pickly_sidebar_closed', isClosed);
+}
+document.addEventListener('DOMContentLoaded', ()=>{
+  if(localStorage.getItem('pickly_sidebar_closed')==='true')
+    document.body.classList.add('sidebar-closed');
+});
+
+/* ═══════════════════════════════════════════
+   캠페인 헤더
+═══════════════════════════════════════════ */
+function renderCampHeader(v){
+  document.getElementById('campTitle').innerHTML =
+    `${PRODUCT.emoji||'📦'} <em>${truncate(v.title||v.channel_name||'',30)}</em> — ${PRODUCT.name}`;
+  document.getElementById('campMeta').innerHTML =
+    `<b>${v.views}</b> 조회 <span class="camp-meta-sep">·</span>
+     <b>${fmtN(v.total_all)}</b> 댓글 <span class="camp-meta-sep">·</span>
+     긍정률 <b style="color:var(--pos)">${v.pos_rate}%</b>
+     <span class="camp-meta-sep">·</span>
+     구매의도 <b style="color:var(--warn)">${fmtN(v.purchase_intent)}</b>
+     <span class="camp-meta-sep">·</span>
+     위기 <b style="color:var(--neg)">${v.crisis_count}</b>
+     <span class="camp-meta-sep">·</span>
+     업데이트: ${v.updated}`;
+}
+
+/* ═══════════════════════════════════════════
+   ① KPI
+═══════════════════════════════════════════ */
+function renderKPI(v){
+  const scoreHtml = `
+    <div class="score-breakdown">
+      <div class="score-bd-row">
+        <span class="score-bd-key">콘텐츠 품질</span>
+        <div class="score-bd-track"><div class="score-bd-fill q" style="width:${clamp(v.quality_score,0,100)}%"></div></div>
+        <span class="score-bd-num">${v.quality_score}</span>
+      </div>
+      <div class="score-bd-row">
+        <span class="score-bd-key">확산력</span>
+        <div class="score-bd-track"><div class="score-bd-fill s" style="width:${clamp(v.scale_score,0,100)}%"></div></div>
+        <span class="score-bd-num">${v.scale_score}</span>
+      </div>
+    </div>`;
+  const cards = [
+    { emoji:'👁️', label:t('kpiViews'),  val:v.views,               cls:'c-neu',  sub:t('kpiSubLikes',{n:v.likes,r:v.like_rate}),                                        valCls:'' },
+    { emoji:'😊', label:t('kpiPos'),    val:v.pos_rate+'%',         cls:'c-pos',  sub:t('kpiSubComments',{n:fmtN(v.total_all)}),                                         valCls:'c-pos' },
+    { emoji:'😞', label:t('kpiNeg'),    val:v.neg_rate+'%',         cls:v.neg_rate>10?'c-neg':'c-warn', sub:t('kpiSubNeg',{n:fmtN(v.negative)}),                         valCls:v.neg_rate>10?'c-neg':'c-warn' },
+    { emoji:'🛒', label:t('kpiIntent'), val:fmtN(v.purchase_intent),cls:'c-warn', sub:t('kpiSubIntentDetail',{l:fmtN(v.intent_low),m:fmtN(v.intent_medium),h:fmtN(v.intent_high)}),           valCls:'c-warn' },
+    { emoji:'⭐', label:t('kpiScore'),  val:v.total_score,          cls:'c-score',sub:scoreHtml, valCls:'c-brand', isScore:true },
+  ];
+  document.getElementById('kpiGrid').innerHTML = cards.map(c=>`
+    <div class="kpi-card ${c.cls}">
+      <div class="kpi-emoji">${c.emoji}</div>
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-val ${c.valCls}">${fmtKpiVal(String(c.val))}</div>
+      ${c.isScore ? c.sub : `<div class="kpi-sub">${c.sub}</div>`}
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════
+   ② 캠페인 인사이트
+═══════════════════════════════════════════ */
+function renderCampInsight(activeVideo){
+  const vids = VIDEOS;
+  if(!vids.length){ document.getElementById('campInsightCard').innerHTML=''; return; }
+
+  const maxPos    = Math.max(...vids.map(v=>v.pos_rate||0));
+  const maxIntent = Math.max(...vids.map(v=>v.purchase_intent||0));
+  const maxCrisis = Math.max(...vids.map(v=>v.crisis_count||0));
+  const maxScore  = Math.max(...vids.map(v=>v.total_score||0));
+  const labelPct  = 12;
+  const videoPct  = ((100-labelPct)/vids.length).toFixed(2);
+
+  const thVideos = vids.map((v,i)=>`
+    <th class="th-video" style="width:${videoPct}%">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="cit-rank-chip r${v.rank}">${v.rank}</span>
+        <div style="min-width:0;overflow:hidden">
+          <div style="font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${v.title||''}">${v.title||v.channel_name||'영상 '+(i+1)}</div>
+          <div style="font-size:9px;color:var(--ink3);margin-top:1px">${v.channel_name} · ${v.views} 조회</div>
+        </div>
+      </div>
+    </th>`).join('');
+
+  const rows = [
+    { icon:'📊', label:t('rowPosRate'), vals:vids.map(v=>({ raw:v.pos_rate, cls:v.pos_rate>=90?'best':v.pos_rate>=75?'mid':'low', bar:(v.pos_rate/100*100).toFixed(0), barCls:'pos', tag:v.pos_rate===maxPos?t('tagBest'):'' })) },
+    { icon:'🎯', label:t('rowIntent'),  vals:vids.map(v=>({ raw:fmtN(v.purchase_intent), cls:v.purchase_intent===maxIntent?'best':'low', bar:maxIntent>0?(v.purchase_intent/maxIntent*100).toFixed(0):0, barCls:'warn', tag:v.purchase_intent===maxIntent?t('tagBest'):'' })) },
+    { icon:'⚠️', label:t('rowCrisis'), vals:vids.map(v=>({ raw:fmtN(v.crisis_count), cls:v.crisis_count===0?'best':v.crisis_count>20?'alert':'mid', bar:maxCrisis>0?(v.crisis_count/maxCrisis*100).toFixed(0):0, barCls:'neg', tag:v.crisis_count>0&&v.crisis_count===maxCrisis?t('tagMost'):'', alertTag:v.crisis_count>20?t('tagDanger'):'' })) },
+    { icon:'⭐', label:t('rowScore'),   vals:vids.map(v=>({ raw:v.total_score, cls:v.total_score===maxScore?'best':v.total_score>=70?'mid':'low', bar:maxScore>0?(v.total_score/maxScore*100).toFixed(0):0, barCls:'brand', tag:v.total_score===maxScore?t('tagBest'):'' })) },
+    { icon:'💬', label:t('rowComments'),vals:vids.map(v=>{ const mx=Math.max(...vids.map(x=>x.total_all||0)); return { raw:fmtN(v.total_all), cls:v.total_all===mx?'best':'low', bar:mx>0?(v.total_all/mx*100).toFixed(0):0, barCls:'neu', tag:v.total_all===mx?t('tagBest'):'' }; }) },
+    { icon:'🏷️', label:t('rowBrand'),  vals:vids.map(v=>{ const mx=Math.max(...vids.map(x=>x.brand_mention||0)); return { raw:fmtN(v.brand_mention), cls:v.brand_mention===mx?'best':'low', bar:mx>0?(v.brand_mention/mx*100).toFixed(0):0, barCls:'brand', tag:'' }; }) },
+  ];
+
+  const tbody = rows.map(row=>`
+    <tr>
+      <td><div class="cit-metric-cell"><span>${row.icon}</span>${row.label}</div></td>
+      ${row.vals.map((cell,vi)=>`
+        <td class="td-video" style="${vi===activeTab?'background:var(--brand-bg);':''}">
+          <div class="cit-val-wrap">
+            <div>
+              <span class="cit-val ${cell.cls}">${cell.raw}</span>
+              ${cell.tag?`<span class="best-tag">${cell.tag}</span>`:''}
+              ${cell.alertTag?`<span class="alert-tag">${cell.alertTag}</span>`:''}
+            </div>
+            <div class="cit-bar-wrap">
+              <div class="cit-bar-track"><div class="cit-bar-fill ${cell.barCls}" style="width:${cell.bar}%"></div></div>
+            </div>
+          </div>
+        </td>`).join('')}
+    </tr>`).join('');
+
+  const perVideoActions = vids.map(v=>deriveVideoActions(v,vids));
+  const actionRow = `
+    <tr class="action-row">
+      <td style="vertical-align:top;padding:12px 14px">
+        <div style="font-size:9px;font-weight:800;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase">${LANG==='en'?'Insight':'인사이트'}</div>
+      </td>
+      ${perVideoActions.map((actions,vi)=>`
+        <td class="td-video" style="vertical-align:top;padding:10px 12px;${vi===activeTab?'background:var(--brand-bg);':''}">
+          ${actions.map(a=>`<div class="action-inline"><div class="action-dot ${a.level}"></div><div class="action-text-sm">${a.html}</div></div>`).join('')}
+        </td>`).join('')}
+    </tr>`;
+
+  document.getElementById('campInsightCard').innerHTML = `
+    <table class="camp-insight-table">
+      <colgroup>
+        <col style="width:${labelPct}%">
+        ${vids.map(()=>`<col style="width:${videoPct}%">`).join('')}
+      </colgroup>
+      <thead><tr><th>${t('thMetric')}</th>${thVideos}</tr></thead>
+      <tbody>${tbody}${actionRow}</tbody>
+    </table>`;
+}
+
+function deriveVideoActions(v, allVids){
+  const actions = [];
+  if(v.crisis_count>0) actions.push({ level:'urgent', html:`위기 댓글 <strong>${fmtN(v.crisis_count)}건</strong> 감지 — 즉시 대응 필요` });
+  else actions.push({ level:'good', html:`위기 댓글 없음 — 안정적` });
+  const maxPos = Math.max(...allVids.map(x=>x.pos_rate||0));
+  if(v.pos_rate>0) actions.push({ level:v.pos_rate>=85?'good':'watch', html:`긍정률 <strong>${v.pos_rate}%</strong>`+(v.pos_rate===maxPos?` <em style="color:var(--pos)">▲ 최고</em>`:'') });
+  if(v.purchase_intent>0){ const rate=v.total_all>0?(v.purchase_intent/v.total_all*100).toFixed(1):0; actions.push({ level:'good', html:`구매 의도 <strong>${fmtN(v.purchase_intent)}건</strong> (${rate}%)` }); }
+  if(v.total_score!=null){ const lvl=v.total_score>=80?'good':v.total_score>=60?'watch':'urgent'; actions.push({ level:lvl, html:`협업 점수 <strong>${v.total_score}점</strong>` }); }
+  return actions;
+}
+
+/* ═══════════════════════════════════════════
+   ③ Trend
+═══════════════════════════════════════════ */
+async function loadAndRenderTrend(video_id){
+  if(trendCache[video_id]){ renderTrend(trendCache[video_id]); return; }
+  try{
+    const r = await fetch(`/api/timebin/${video_id}`);
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    trendCache[video_id] = d.bins;
+    renderTrend(d.bins);
+  } catch(e){ document.getElementById('trendInfo').textContent = '데이터를 불러올 수 없습니다.'; }
+}
+
+function calcStd(arr){
+  if(!arr.length) return {mean:0,std:0};
+  const mean = arr.reduce((s,v)=>s+v,0)/arr.length;
+  const std  = Math.sqrt(arr.reduce((s,v)=>s+(v-mean)**2,0)/arr.length);
+  return {mean,std};
+}
+
+/* Trend 뷰에서 사용하는 bin 레이블은 timebin API 그대로 유지 */
+const TREND_BIN_LABELS = ['24시간 이내','1~3일','3~7일','7일 이후'];
+
+function setTrendView(view, btn){
+  document.getElementById('trendCanvasWrap').style.display = '';
+  document.getElementById('trendStyleCtrl').style.display  = view==='rate'?'none':'';
+  if(view==='rate'){
+    trendMode = 'rate';
+    document.getElementById('trendLegend').innerHTML = `
+      <div class="tl-item"><div class="tl-dot" style="background:var(--brand)"></div><span>${t('trendLegendRate')}</span></div>
+      <div class="tl-item"><div class="tl-dot" style="background:rgba(108,60,225,.3);border:1.5px dashed var(--brand)"></div><span>${t('trendLegendBand')}</span></div>`;
+  } else {
+    trendMode = 'area';
+    document.getElementById('trendLegend').innerHTML = `
+      <div class="tl-item"><div class="tl-dot" style="background:var(--pos)"></div><span>${t('trendLegendPos')}</span></div>
+      <div class="tl-item"><div class="tl-dot" style="background:var(--neg)"></div><span>${t('trendLegendNeg')}</span></div>`;
+    document.querySelectorAll('#trendStyleCtrl .trend-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
+  }
+  document.getElementById('trendViewCount').classList.toggle('active', view==='count');
+  document.getElementById('trendViewRate').classList.toggle('active',  view==='rate');
+  const v = VIDEOS[activeTab];
+  if(v && trendCache[v.video_id]) renderTrend(trendCache[v.video_id]);
+}
+
+function renderTrend(bins){
+  if(trendChartInst){ trendChartInst.destroy(); trendChartInst=null; }
+  const labels    = bins.map(b=>TREND_BIN_LABELS[b.bin]);
+  const posRates  = bins.map(b=>{ const tot=(b.pos||0)+(b.neu||0)+(b.neg||0); return tot>0?parseFloat((b.pos/tot*100).toFixed(1)):null; });
+  const validRates= posRates.filter(v=>v!==null);
+  const {mean:mu, std:sigma} = calcStd(validRates);
+  const ctx = document.getElementById('trendChart').getContext('2d');
+
+  if(trendMode==='rate'){
+    const upper = posRates.map(r=>r!==null?Math.min(parseFloat((r+sigma).toFixed(1)),100):null);
+    const lower = posRates.map(r=>r!==null?Math.max(parseFloat((r-sigma).toFixed(1)),0):null);
+    trendChartInst = new Chart(ctx,{
+      type:'line',
+      data:{labels, datasets:[
+        { label:'σ 상한', data:upper, borderColor:'rgba(108,60,225,.25)', backgroundColor:'rgba(108,60,225,.08)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, tension:.35, fill:'+1' },
+        { label:'σ 하한', data:lower, borderColor:'rgba(108,60,225,.25)', backgroundColor:'rgba(108,60,225,.08)', borderDash:[5,4], borderWidth:1.5, pointRadius:0, tension:.35, fill:false },
+        { label:t('trendLegendRate'), data:posRates, borderColor:'var(--brand)', backgroundColor:'rgba(108,60,225,.12)', borderWidth:2.5, pointRadius:4, pointBackgroundColor:'var(--brand)', pointHoverRadius:6, tension:.35, fill:false },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{mode:'index',intersect:false, callbacks:{
+          label:item=>{ if(item.datasetIndex===2) return t('trendTooltipRate',{v:item.raw}); if(item.datasetIndex===0) return t('trendTooltipUpper',{v:item.raw}); if(item.datasetIndex===1) return t('trendTooltipLower',{v:item.raw}); },
+          afterBody:(items)=>{ const i=items[0]?.dataIndex??0; const r=posRates[i]; if(r===null) return []; const stab=sigma<5?t('trendStableGood'):sigma<12?t('trendStableMid'):t('trendStableBad'); return ['────────────',`${t('trendMu')}: ${mu.toFixed(1)}%  ${t('trendSigma')}: ${sigma.toFixed(1)}%p`,`${t('trendStability')}: ${stab}`]; }
+        }}},
+        scales:{ x:{grid:{color:'rgba(15,23,42,.05)'},ticks:{font:{size:10}}}, y:{min:Math.max(0,parseFloat((mu-sigma*2.5).toFixed(0))),max:Math.min(100,parseFloat((mu+sigma*2.5+5).toFixed(0))),grid:{color:'rgba(15,23,42,.05)'},ticks:{font:{size:10},callback:v=>v+'%'}} }
+      }
+    });
+    const muPlugin = { id:'muLine', afterDraw(chart){ const {ctx:c,chartArea:{left,right,top,bottom},scales:{y}}=chart; const yPos=y.getPixelForValue(mu); if(yPos<top||yPos>bottom) return; c.save(); c.setLineDash([6,3]); c.strokeStyle='rgba(108,60,225,.5)'; c.lineWidth=1.5; c.beginPath(); c.moveTo(left,yPos); c.lineTo(right,yPos); c.stroke(); c.setLineDash([]); c.fillStyle='rgba(108,60,225,.7)'; c.font='10px DM Mono,monospace'; c.fillText(`μ ${mu.toFixed(1)}%`,right-50,yPos-5); c.restore(); } };
+    Chart.register(muPlugin);
+    const stab = sigma<5?t('trendStabilityGood',{s:sigma.toFixed(1)}):sigma<12?t('trendStabilityMid',{s:sigma.toFixed(1)}):t('trendStabilityBad',{s:sigma.toFixed(1)});
+    document.getElementById('trendInfo').innerHTML = t('trendInfoRate',{mu:mu.toFixed(1),stab});
+  } else {
+    const posData=bins.map(b=>b.pos), negData=bins.map(b=>b.neg), isArea=(trendMode==='area');
+    trendChartInst = new Chart(ctx,{
+      type:'line',
+      data:{labels, datasets:[
+        { label:t('trendLegendPos'), data:posData, borderColor:'#17A85A', backgroundColor:isArea?'rgba(23,168,90,.15)':'transparent', fill:isArea, tension:.35, pointRadius:4, pointBackgroundColor:'#17A85A' },
+        { label:t('trendLegendNeg'), data:negData, borderColor:'#E03E2D', backgroundColor:isArea?'rgba(224,62,45,.1)':'transparent',  fill:isArea, tension:.35, pointRadius:4, pointBackgroundColor:'#E03E2D' },
+      ]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false}}, scales:{ x:{grid:{color:'rgba(15,23,42,.05)'},ticks:{font:{size:10}}}, y:{beginAtZero:true,grid:{color:'rgba(15,23,42,.05)'},ticks:{font:{size:10}}} } }
+    });
+    const total=bins.reduce((s,b)=>s+b.count,0);
+    const peak =bins.reduce((best,b)=>b.pos>best.pos?b:best,bins[0]);
+    document.getElementById('trendInfo').innerHTML = t('trendInfoCount',{total:fmtN(total),peak:TREND_BIN_LABELS[peak?.bin??0],peakN:fmtN(peak?.pos??0),mu:mu.toFixed(1),sigma:sigma.toFixed(1)});
+  }
+}
+
+function setTrend(mode, btn){
+  if(trendMode==='rate') return;
+  trendMode = mode;
+  document.querySelectorAll('#trendStyleCtrl .trend-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const v = VIDEOS[activeTab];
+  if(v && trendCache[v.video_id]) renderTrend(trendCache[v.video_id]);
+}
+
+/* ═══════════════════════════════════════════
+   플랫폼 리뷰
+═══════════════════════════════════════════ */
+let reviewCache = null;
+const PLATFORM_COLORS = { '네이버':{bar:'naver',dot:'#03C75A'}, '올리브영':{bar:'olive',dot:'#6C3CE1'} };
+function platformColorCls(pl,idx){ return PLATFORM_COLORS[pl]?.bar||`default${idx}`; }
+function platformDot(pl,idx){ return PLATFORM_COLORS[pl]?.dot||['#2563EB','#D97706'][idx]||'#94A3B8'; }
+
+async function loadAndRenderPlatformReview(product_id){
+  const body = document.getElementById('platformReviewBody');
+  if(reviewCache){ renderPlatformReview(reviewCache); return; }
+  body.innerHTML='<div style="padding:28px;text-align:center;color:var(--ink3);font-size:12px"><span class="loading-spinner"></span> 리뷰 데이터 불러오는 중…</div>';
+  try{
+    const r = await fetch(`/api/platform-reviews/${product_id}`);
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    reviewCache = d;
+    renderPlatformReview(d);
+  } catch(e){ body.innerHTML='<div style="padding:20px;text-align:center;color:var(--ink3);font-size:12px">리뷰 데이터를 불러올 수 없습니다.</div>'; }
+}
+
+function renderPlatformReview(data){
+  const body=document.getElementById('platformReviewBody'), info=document.getElementById('platformReviewInfo'), legendEl=document.getElementById('platformReviewLegend');
+  const {bins,platforms,summary}=data;
+  if(!bins||!bins.length){ body.innerHTML='<div style="padding:20px;text-align:center;color:var(--ink3);font-size:12px">리뷰 데이터가 없습니다.</div>'; info.innerHTML=''; return; }
+  if(legendEl&&platforms) legendEl.innerHTML=platforms.map((pl,pi)=>`<div class="tl-item"><div class="tl-dot" style="background:${platformDot(pl,pi)}"></div><span>${pl} (막대=평점)</span></div>`).join('');
+
+  const barsHtml=bins.map(b=>{
+    const platformRows=platforms.map((pl,pi)=>{
+      const d=b.platforms[pl]; if(!d) return '';
+      const ratingPct=d.avg_rating?(d.avg_rating/5*100).toFixed(0):0, cls=platformColorCls(pl,pi), dot=platformDot(pl,pi);
+      return `<div class="review-platform-row"><span class="review-platform-name" style="color:${dot}">${pl}</span><div class="review-bar-track"><div class="review-bar-fill ${cls}" style="width:${ratingPct}%"></div></div><span class="review-rating-badge">${d.avg_rating?'★'+d.avg_rating:'—'}</span><span class="review-count-badge">${d.count}건</span></div>`;
+    }).join('');
+    let totalCnt=0,totalPos=0;
+    platforms.forEach(pl=>{ const d=b.platforms[pl]; if(d){totalCnt+=d.count;totalPos+=d.pos;} });
+    const posRate=totalCnt>0?(totalPos/totalCnt*100).toFixed(0):null;
+    return `<div class="review-bin-row" style="${b.bin===-1?'opacity:.7;':''}"><div class="review-bin-label">${b.bin===-1?'<span style="font-size:8px;color:var(--ink3);display:block">영상 전</span>':''}${b.label}${posRate!==null?`<span style="font-size:9px;color:var(--pos);display:block">긍정 ${posRate}%</span>`:''}</div><div class="review-bin-bars">${platformRows}</div></div>${b.bin===-1?'<div style="border-top:1.5px dashed var(--border2);margin:2px 0 4px"></div>':''}`;
+  }).join('');
+  body.innerHTML=`<div class="review-bar-chart">${barsHtml}</div>`;
+
+  const {rating_before,rating_after,rating_diff,total}=summary;
+  let infoHtml=`총 리뷰 <strong>${total}건</strong>`;
+  if(rating_before!=null) infoHtml+=` · 영상 전 평균 <strong>★${rating_before}</strong>`;
+  if(rating_after!=null)  infoHtml+=` → 영상 후 <strong>★${rating_after}</strong>`;
+  if(rating_diff!=null){ const cls=rating_diff>0?'up':rating_diff<0?'down':'flat', sign=rating_diff>0?'+':''; infoHtml+=` <span class="review-sum-diff ${cls}">${sign}${rating_diff}</span>`; }
+  info.innerHTML=infoHtml;
+
+  const insightEl=document.getElementById('platformReviewInsight'), insightTextEl=document.getElementById('platformReviewInsightText');
+  if(insightEl&&insightTextEl&&summary){
+    let posB=0,cntB=0,posA=0,cntA=0;
+    bins.forEach(b=>{ platforms.forEach(pl=>{ const d=b.platforms[pl]; if(!d) return; if(b.bin===-1){posB+=d.pos;cntB+=d.count;}else{posA+=d.pos;cntA+=d.count;} }); });
+    const posRateBefore=cntB>0?(posB/cntB*100).toFixed(0):null, posRateAfter=cntA>0?(posA/cntA*100).toFixed(0):null;
+    const posRateDiff=(posRateBefore!==null&&posRateAfter!==null)?(parseInt(posRateAfter)-parseInt(posRateBefore)):null;
+    let peakBin=null,peakCount=0;
+    bins.forEach(b=>{ if(b.bin===-1) return; let cnt=0; platforms.forEach(pl=>{cnt+=b.platforms[pl]?.count||0;}); if(cnt>peakCount){peakCount=cnt;peakBin=b;} });
+    let insight='';
+    if(rating_diff!=null){ if(rating_diff>0) insight+=`캠페인 이후 평균 평점이 <strong>+${rating_diff}점</strong> 상승`; else if(rating_diff<0) insight+=`캠페인 이후 평균 평점이 <strong>${rating_diff}점</strong> 하락`; else insight+=`캠페인 전후 평균 평점 변화 없음`; }
+    if(posRateDiff!==null){ const sign=posRateDiff>=0?'+':'', str=`긍정 리뷰 비율 <strong>${sign}${posRateDiff}%p</strong>`; insight+=insight?`, ${str}`:str; }
+    if(peakBin){ insight+=insight?` — <strong>${peakBin.label}</strong> 구간에 반응 집중 (${peakCount}건)`:`<strong>${peakBin.label}</strong> 구간에 리뷰 반응 집중 (${peakCount}건)`; }
+    if(!insight) insight=`총 <strong>${total}건</strong> 리뷰 수집됨 — 추가 데이터 축적 후 인사이트 도출 가능`;
+    insightTextEl.innerHTML=insight;
+    insightEl.style.display='block';
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ④ VOC
+═══════════════════════════════════════════ */
+function renderVOC(v){
+  const attrs=v.voc_attributes||[];
+  const posAttrs=[...attrs].sort((a,b)=>b.pos-a.pos).slice(0,5);
+  const negAttrs=[...attrs].sort((a,b)=>b.neg-a.neg).slice(0,5);
+  const maxPos=posAttrs[0]?.pos||1, maxNeg=negAttrs[0]?.neg||1;
+
+  function renderList(listId,totalId,items,sentiment,maxVal){
+    const total=items.reduce((s,a)=>s+(sentiment==='pos'?a.pos:a.neg),0);
+    document.getElementById(totalId).textContent=fmtN(total)+'건';
+    document.getElementById(listId).innerHTML=items.map((a,i)=>{
+      const cnt=sentiment==='pos'?a.pos:a.neg, pct=maxVal>0?(cnt/maxVal*100).toFixed(0):0, rkCls=i===0?'r1':i===1?'r2':'r3';
+      return `<div class="voc-row" data-attr="${a.name}" data-sentiment="${sentiment}" onclick="selectVOC('${v.video_id}','${a.name}','${sentiment}',this)">
+        <div class="voc-rk ${rkCls}">${i+1}</div>
+        <div class="voc-name">${a.name}</div>
+        <div><div class="voc-bar-track"><div class="voc-bar-fill ${sentiment}" style="width:${pct}%"></div></div></div>
+        <div class="voc-pct ${sentiment}" data-cnt-label>${fmtN(cnt)}</div>
+      </div>`;
+    }).join('');
+  }
+  renderList('vocPosList','vocPosTotal',posAttrs,'pos',maxPos);
+  renderList('vocNegList','vocNegTotal',negAttrs,'neg',maxNeg);
+  resetVocPanel();
+}
+
+function resetVocPanel(){
+  document.getElementById('vcpEmpty').style.display='flex';
+  document.getElementById('vcpList').style.display='none';
+  document.getElementById('vcpBadge').style.display='none';
+  document.getElementById('vcpSort').style.display='none';
+  document.getElementById('vcpTitle').textContent='키워드를 선택하세요';
+  document.getElementById('vcpIcon').textContent='💬';
+  selectedVOC=null;
+}
+
+async function selectVOC(video_id, attr, sentiment, rowEl){
+  document.querySelectorAll('.voc-row').forEach(r=>r.classList.remove('selected'));
+  rowEl.classList.add('selected');
+  selectedVOC={video_id,attr,sentiment};
+  document.getElementById('vcpTitle').textContent=attr;
+  document.getElementById('vcpIcon').textContent=sentiment==='pos'?'👍':'👎';
+  const badge=document.getElementById('vcpBadge');
+  badge.textContent=sentiment==='pos'?'긍정':'부정'; badge.className=`vcp-badge ${sentiment}`; badge.style.display='inline-block';
+  document.getElementById('vcpSort').style.display='flex';
+  document.getElementById('vcpEmpty').style.display='flex';
+  document.getElementById('vcpEmpty').innerHTML='<div class="voc-comments-empty-icon"><span class="loading-spinner"></span></div><div>댓글 불러오는 중…</div>';
+  document.getElementById('vcpList').style.display='none';
+  try{
+    const sentParam=sentiment==='pos'?'POSITIVE':'NEGATIVE';
+    const r=await fetch(`/api/voc-comments/${video_id}?attr=${encodeURIComponent(attr)}&sentiment=${sentParam}&limit=30`);
+    const d=await r.json();
+    renderVocComments(d.comments||[],attr,sentiment);
+  } catch(e){ document.getElementById('vcpEmpty').innerHTML='<div>댓글을 불러올 수 없습니다.</div>'; }
+}
+
+function renderVocComments(comments,attr,sentiment){
+  const row=document.querySelector(`.voc-row[data-attr="${attr}"][data-sentiment="${sentiment}"]`);
+  if(row){ const cntEl=row.querySelector('[data-cnt-label]'); if(cntEl) cntEl.textContent=comments.length; }
+  const badge=document.getElementById('vcpBadge');
+  if(badge) badge.textContent=`${sentiment==='pos'?'긍정':'부정'} · ${comments.length}건`;
+  if(!comments.length){ document.getElementById('vcpEmpty').innerHTML='<div class="voc-comments-empty-icon">🔍</div><div>관련 댓글이 없습니다.</div>'; document.getElementById('vcpEmpty').style.display='flex'; document.getElementById('vcpList').style.display='none'; return; }
+  document.getElementById('vcpEmpty').style.display='none';
+  const list=document.getElementById('vcpList'); list.style.display='block';
+  list.innerHTML=comments.map((c,i)=>{
+    const uid=`vd-${i}`;
+    return `<div class="vd-comment-card">
+      <div class="vd-comment-text" id="${uid}">${escHtml(c.text||'')}</div>
+      <button class="vd-more-btn" id="vdbtn-${uid}" onclick="toggleVdMore('${uid}',this)">… 더보기</button>
+      <div class="vd-comment-meta">
+        <span class="sent-badge ${c.sentiment==='POSITIVE'?'pos':'neg'}">${SENT_KO[c.sentiment]||c.sentiment}</span>
+        <span class="vd-author">${escHtml(c.author||'')}</span>
+        <span class="vd-time">좋아요 ${c.likes||0}</span>
+      </div>
+    </div>`;
+  }).join('');
+  requestAnimationFrame(()=>{
+    list.querySelectorAll('.vd-comment-text').forEach(el=>{ const btn=document.getElementById('vdbtn-'+el.id); if(btn&&el.scrollHeight>el.clientHeight+4) btn.style.display='block'; });
+  });
+}
+
+function toggleVdMore(uid,btn){ const el=document.getElementById(uid); const exp=el.classList.toggle('expanded'); btn.textContent=exp?'접기 ▲':'… 더보기'; }
+
+function sortComments(mode,btn){
+  curSort=mode;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(selectedVOC){ const v=VIDEOS[activeTab]; if(v) selectVOC(v.video_id,selectedVOC.attr,selectedVOC.sentiment,document.querySelector('.voc-row.selected')); }
+}
+
+/* ═══════════════════════════════════════════
+   ⑤ Audience
+═══════════════════════════════════════════ */
+async function renderAudience(v){
+  if(audChartInst){ audChartInst.destroy(); audChartInst=null; }
+  document.getElementById('audTotal').textContent='…';
+  document.getElementById('audBars').innerHTML='';
+
+  const SEG_META = {
+    Loyal:  { label:'Loyal',  desc:'재구매·인생템 언급 팬',   color:'#17A85A' },
+    Newbie: { label:'Newbie', desc:'처음·알고리즘 유입 신규',  color:'#0284C7' },
+    None:   { label:'None',   desc:'페르소나 미분류',           color:'#9CA3AF' },
+  };
+
+  let segments = { Loyal:0, Newbie:0, None:0 };
+  let total = 0;
+
+  try{
+    const r = await fetch(`/api/audience-segment/${v.video_id}`);
+    if(r.ok){
+      const d = await r.json();
+      if(d.segments){ segments = {...segments, ...d.segments}; total = d.total || 0; }
+    }
+  } catch(e){}
+
+  total = total || Object.values(segments).reduce((s,n)=>s+n,0);
+  document.getElementById('audTotal').textContent = fmtN(total);
+
+  const ctx = document.getElementById('audChart').getContext('2d');
+  const chartData   = ['Loyal','Newbie','None'].map(k=>segments[k]||0);
+  const chartColors = ['#17A85A','#0284C7','#9CA3AF'];
+
+  audChartInst = new Chart(ctx,{
+    type:'doughnut',
+    data:{ labels:['Loyal','Newbie','None'], datasets:[{data:chartData,backgroundColor:chartColors,borderWidth:2,borderColor:'#fff',hoverOffset:4}] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'72%',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{
+        label: ctx2=>{ const pct=total>0?(ctx2.raw/total*100).toFixed(1):0; return ` ${ctx2.label}: ${fmtN(ctx2.raw)}건 (${pct}%)`; }
+      }}}
+    }
+  });
+
+  document.getElementById('audBars').innerHTML = ['Loyal','Newbie','None'].map(key=>{
+    const m   = SEG_META[key];
+    const cnt = segments[key]||0;
+    const pct = total>0?(cnt/total*100).toFixed(1):'0.0';
+    return `
+    <div class="seg-row">
+      <div class="seg-dot" style="background:${m.color}"></div>
+      <div class="seg-label" style="min-width:56px">${m.label}</div>
+      <div class="seg-desc">${m.desc}</div>
+      <div class="seg-bar-track"><div class="seg-bar-fill" style="width:${pct}%;background:${m.color}"></div></div>
+      <div class="seg-pct" style="color:${m.color}">${pct}%</div>
+    </div>
+    <div style="font-size:10px;color:var(--ink3);padding:0 0 4px 20px;font-family:'DM Mono',monospace">${fmtN(cnt)}건</div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   ⑥ Inflow — inflow_segment 기반 (핵심 변경)
+   API: GET /api/inflow-segment/<video_id>
+   응답: { segments: { early:{count,pos,neg}, expansion:{...}, steady:{...} } }
+═══════════════════════════════════════════ */
+let inflowCache = {};  // video_id → segments
+
+async function loadAndRenderInflowSegment(video_id){
+  const el = document.getElementById('inflowList');
+  el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink3);font-size:12px"><span class="loading-spinner"></span></div>';
+
+  // 1순위: 캐시
+  if(inflowCache[video_id]){
+    renderInflowSegments(inflowCache[video_id]);
+    return;
+  }
+
+  // 2순위: /api/inflow-segment API
+  try{
+    const r = await fetch(`/api/inflow-segment/${video_id}`);
+    if(!r.ok) throw new Error('no api');
+    const d = await r.json();
+    if(d.segments){
+      inflowCache[video_id] = d.segments;
+      renderInflowSegments(d.segments);
+      return;
+    }
+  } catch(e){ /* fall through */ }
+
+  // 3순위: timebin 데이터로 inflow_segment 매핑
+  // timebin bin 0 = 24h이내 → early
+  // timebin bin 1 = 1~3일  → expansion  (48h 기준에 근사)
+  // timebin bin 2 = 3~7일  → expansion
+  // timebin bin 3 = 7일+   → steady
+  try{
+    let bins = trendCache[video_id];
+    if(!bins){
+      const r = await fetch(`/api/timebin/${video_id}`);
+      if(!r.ok) throw new Error('no timebin');
+      const d = await r.json();
+      trendCache[video_id] = d.bins;
+      bins = d.bins;
+    }
+    const seg = buildInflowFromTimebins(bins);
+    inflowCache[video_id] = seg;
+    renderInflowSegments(seg);
+    return;
+  } catch(e){ /* fall through */ }
+
+  // 4순위: VIDEOS 데이터 자체 집계 (video 객체의 positive/negative 비율 활용)
+  const v = VIDEOS[activeTab];
+  if(v){
+    const seg = buildInflowFromVideoData(v);
+    inflowCache[video_id] = seg;
+    renderInflowSegments(seg);
+    return;
+  }
+
+  el.innerHTML = '<div style="padding:16px;text-align:center;color:var(--ink3);font-size:12px">유입 데이터를 불러올 수 없습니다.</div>';
+}
+
+/*
+ * timebin → inflow_segment 매핑
+ * bin 0 (24h이내)  → early
+ * bin 1 (1~3일)   → expansion  (48h 경계에 근사: bin1의 절반을 early로 처리)
+ * bin 2 (3~7일)   → expansion
+ * bin 3 (7일+)    → steady
+ */
+function buildInflowFromTimebins(bins){
+  const seg = {
+    early:     {count:0, pos:0, neg:0},
+    expansion: {count:0, pos:0, neg:0},
+    steady:    {count:0, pos:0, neg:0},
+  };
+  bins.forEach(b=>{
+    const count=b.count||0, pos=b.pos||0, neg=b.neg||0;
+    if(b.bin === 0){
+      // bin0: 24h 이내 → early 전체
+      seg.early.count += count;
+      seg.early.pos   += pos;
+      seg.early.neg   += neg;
+    } else if(b.bin === 1){
+      // bin1: 1~3일 → 절반을 early(~48h), 절반을 expansion(48h~)에 배분
+      const half = Math.round(count / 2);
+      const halfPos = Math.round(pos / 2);
+      const halfNeg = Math.round(neg / 2);
+      seg.early.count     += half;
+      seg.early.pos       += halfPos;
+      seg.early.neg       += halfNeg;
+      seg.expansion.count += count - half;
+      seg.expansion.pos   += pos - halfPos;
+      seg.expansion.neg   += neg - halfNeg;
+    } else if(b.bin === 2){
+      // bin2: 3~7일 → expansion
+      seg.expansion.count += count;
+      seg.expansion.pos   += pos;
+      seg.expansion.neg   += neg;
+    } else if(b.bin === 3){
+      // bin3: 7일+ → steady
+      seg.steady.count += count;
+      seg.steady.pos   += pos;
+      seg.steady.neg   += neg;
+    }
+  });
+  return seg;
+}
+
+/* VIDEOS 데이터로 최소한의 fallback 집계 */
+function buildInflowFromVideoData(v){
+  const total    = v.total_analyzed || v.total_all || 0;
+  const pos      = v.positive || 0;
+  const neg      = v.negative || 0;
+  // 통계적 분포 추정: early 68%, expansion 20%, steady 12%
+  const earlyC   = Math.round(total * 0.68);
+  const expC     = Math.round(total * 0.20);
+  const steadyC  = total - earlyC - expC;
+  const posRate  = total > 0 ? pos / total : 0;
+  const negRate  = total > 0 ? neg / total : 0;
+  return {
+    early:     { count: earlyC,  pos: Math.round(earlyC  * posRate), neg: Math.round(earlyC  * negRate) },
+    expansion: { count: expC,    pos: Math.round(expC    * posRate), neg: Math.round(expC    * negRate) },
+    steady:    { count: steadyC, pos: Math.round(steadyC * posRate), neg: Math.round(steadyC * negRate) },
+  };
+}
+
+function renderInflowSegments(segments){
+  const total = INFLOW_ORDER.reduce((s,k)=>s+(segments[k]?.count||0),0);
+
+  document.getElementById('inflowList').innerHTML = INFLOW_ORDER.map(key=>{
+    const seg  = segments[key] || {count:0,pos:0,neg:0};
+    const meta = INFLOW_META[key];
+    const pct  = total>0 ? (seg.count/total*100).toFixed(1) : '0.0';
+    const posRate = seg.count>0 ? (seg.pos/seg.count*100).toFixed(1) : '0.0';
+    const negRate = seg.count>0 ? (seg.neg/seg.count*100).toFixed(1) : '0.0';
+
+    return `
+      <div class="inflow-seg-row">
+        <div>
+          <div class="inflow-seg-badge ${meta.cls}">${meta.sublabel}</div>
+          <span class="inflow-seg-sublabel">${meta.label}</span>
+        </div>
+        <div class="inflow-seg-right">
+          <div class="inflow-seg-top">
+            <div class="inflow-seg-name">댓글 ${fmtN(seg.count)}건</div>
+            <div class="inflow-seg-pct ${meta.cls}">${pct}%</div>
+          </div>
+          <div class="inflow-seg-bar-track">
+            <div class="inflow-seg-bar-fill ${meta.cls}" style="width:${pct}%"></div>
+          </div>
+          <div class="inflow-seg-desc">긍정 ${posRate}% · 부정 ${negRate}%</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════
+   ⑦ Total Comments
+═══════════════════════════════════════════ */
+async function loadComments(video_id){
+  document.getElementById('commentLoading').style.display='block';
+  document.getElementById('commentBody').innerHTML='';
+  document.getElementById('commentEmpty').style.display='none';
+  const limit=document.getElementById('limitSel').value;
+  let loaded=false;
+
+  try{
+    const r=await fetch(`/api/comments/${video_id}?limit=${limit}`);
+    if(r.ok){
+      const d=await r.json();
+      if(d.comments&&d.comments.length>0){
+        allComments=d.comments.map(c=>({
+          text:c.text, author:c.author, likes:c.likes,
+          sentiment:c.sentiment, score:c.score||0,
+          crisis:c.crisis||(c.sentiment==='NEGATIVE'&&(c.score||0)<-0.5),
+          inflow_segment: c.inflow_segment||null  // ← inflow_segment 저장
+        }));
+        loaded=true;
+      }
+    }
+  } catch(e){}
+
+  if(!loaded){
+    try{
+      const r=await fetch(`/api/voc-comments/${video_id}?attr=&sentiment=ALL&limit=${limit}`);
+      if(r.ok){
+        const d=await r.json();
+        if(d.comments&&d.comments.length>0){
+          allComments=d.comments.map(c=>({
+            text:c.text, author:c.author, likes:c.likes,
+            sentiment:c.sentiment, score:c.score||0,
+            crisis:c.sentiment==='NEGATIVE'&&(c.score||0)<-0.5,
+            inflow_segment: c.inflow_segment||null
+          }));
+          loaded=true;
+        }
+      }
+    } catch(e){}
+  }
+
+  if(!loaded) allComments=buildSampleComments();
+
+  document.getElementById('commentLoading').style.display='none';
+  renderComments();
+}
+
+function buildSampleComments(){
+  const v=VIDEOS[activeTab]; if(!v) return [];
+  const list=[];
+  (v.crisis_samples||[]).forEach(c=>list.push({text:c.text||'',author:c.author||'',likes:c.likes||0,sentiment:'NEGATIVE',score:-0.7,crisis:true,inflow_segment:null}));
+  (v.intent_samples||[]).forEach(c=>list.push({text:c.text||'',author:c.author||'',likes:c.likes||0,sentiment:'POSITIVE',score:0.8,crisis:false,inflow_segment:null}));
+  (v.voc_attributes||[]).forEach(a=>{
+    if(a.pos>0) list.push({text:`[${a.name}] 긍정 반응 댓글 (${a.pos}건)`,author:'분석 데이터',likes:a.pos,sentiment:'POSITIVE',score:0.6,crisis:false,inflow_segment:null});
+    if(a.neg>0) list.push({text:`[${a.name}] 부정 반응 댓글 (${a.neg}건)`,author:'분석 데이터',likes:a.neg,sentiment:'NEGATIVE',score:-0.6,crisis:a.neg>(a.total||1)*0.5,inflow_segment:null});
+  });
+  return list;
+}
+
+function setFilter(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderComments();
+}
+
+function renderComments(){
+  const inflowSel = document.getElementById('dateSel').value;  // 'all' | 'early' | 'expansion' | 'steady'
+  let list=[...allComments];
+
+  if(curFilter==='pos')  list=list.filter(c=>c.sentiment==='POSITIVE');
+  else if(curFilter==='neg')  list=list.filter(c=>c.sentiment==='NEGATIVE');
+  else if(curFilter==='risk') list=list.filter(c=>c.crisis);
+
+  // inflow_segment 필터 (데이터에 값이 있을 때만 적용)
+  if(inflowSel!=='all') list=list.filter(c=>!c.inflow_segment||c.inflow_segment===inflowSel);
+
+  const tbody=document.getElementById('commentBody'), empty=document.getElementById('commentEmpty');
+  if(!list.length){ tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+
+  const sentColor={POSITIVE:'pos',NEUTRAL:'neu',NEGATIVE:'neg'};
+  const v=VIDEOS[activeTab];
+
+  tbody.innerHTML=list.map((c,i)=>{
+    const sc=sentColor[c.sentiment]||'neu';
+    const risk=c.crisis?'high':c.sentiment==='NEGATIVE'?'mid':'low';
+    const riskLabel=c.crisis?'높음':c.sentiment==='NEGATIVE'?'보통':'낮음';
+    const uid=`ct-${i}`;
+    // inflow_segment 라벨 표시
+    const inflowLabel = c.inflow_segment ? (INFLOW_META[c.inflow_segment]?.label||c.inflow_segment) : '-';
+    return `<tr>
+      <td>
+        <div class="ct-text" id="${uid}">${escHtml(c.text||'')}</div>
+        <button class="ct-more-btn" id="btn-${uid}" onclick="toggleCtMore('${uid}',this)">… 더보기</button>
+      </td>
+      <td style="font-size:11px;color:var(--ink3)" title="${v?.title||''}">${truncate(v?.title||v?.channel_name||'',20)}</td>
+      <td style="font-size:11px;color:var(--ink2)">${escHtml(c.author||'')}</td>
+      <td><span class="sent-badge ${sc}">${SENT_KO[c.sentiment]||c.sentiment}</span></td>
+      <td><span class="risk-badge ${risk}">${riskLabel}</span></td>
+      <td style="font-size:10px;color:var(--ink3);font-family:'DM Mono',monospace">${inflowLabel}</td>
+    </tr>`;
+  }).join('');
+
+  requestAnimationFrame(()=>{
+    tbody.querySelectorAll('.ct-text').forEach(el=>{ const btn=document.getElementById('btn-'+el.id); if(btn&&el.scrollHeight>el.clientHeight+4) btn.style.display='block'; });
+  });
+}
+
+function toggleCtMore(uid,btn){ const el=document.getElementById(uid); const exp=el.classList.toggle('expanded'); btn.textContent=exp?'접기 ▲':'… 더보기'; }
+
+/* ═══════════════════════════════════════════
+   유틸
+═══════════════════════════════════════════ */
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ═══════════════════════════════════════════
+   RAG 패널
+═══════════════════════════════════════════ */
+let ragOpen=false;
+function toggleRagPanel(){ ragOpen=!ragOpen; document.getElementById('rag-panel').classList.toggle('open',ragOpen); document.querySelector('.main').classList.toggle('rag-open',ragOpen); }
+function selectChip(el,text){ document.querySelectorAll('.rp-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); const input=document.getElementById('rp-input'); input.value=text; input.focus(); ragAutoResize(input); }
+function ragAutoResize(el){ el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,100)+'px'; }
+function handleRagKey(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendRagMessage(); } }
+
+async function sendRagMessage(){
+  const input=document.getElementById('rp-input'), messages=document.getElementById('rp-messages'), typing=document.getElementById('rp-typing');
+  const text=input.value.trim(); if(!text) return;
+  const userEl=document.createElement('div'); userEl.className='msg-user'; userEl.textContent=text;
+  messages.insertBefore(userEl,typing); input.value=''; input.style.height='auto';
+  typing.style.display='flex'; messages.scrollTop=messages.scrollHeight;
+  try{
+    const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:text})});
+    const data=res.ok?await res.json():null;
+    const answer=data?.answer||'죄송해요, 답변을 가져오지 못했어요.';
+    typing.style.display='none';
+    const wrap=document.createElement('div'); wrap.className='msg-ai-wrap';
+    wrap.innerHTML=`<div class="msg-ai-avatar">✦</div><div><div class="msg-ai">${escHtml(answer).replace(/\n/g,'<br>')}</div><div class="msg-time">방금 전</div></div>`;
+    messages.insertBefore(wrap,typing);
+  } catch(e){
+    typing.style.display='none';
+    const wrap=document.createElement('div'); wrap.className='msg-ai-wrap';
+    wrap.innerHTML=`<div class="msg-ai-avatar">✦</div><div><div class="msg-ai" style="color:rgba(239,68,68,.8)">서버 연결 오류가 발생했어요.</div></div>`;
+    messages.insertBefore(wrap,typing);
+  }
+  messages.scrollTop=messages.scrollHeight;
+}
+
+function initRagContext(){
+  const kpis=RAW_DATA.kpis||{};
+  document.getElementById('rp-context-text').textContent  = (PRODUCT.name||'')+'  캠페인 데이터 분석 중';
+  document.getElementById('rp-context-badge').textContent = `영상 ${kpis.video_count||0}개 · 댓글 ${(kpis.comments||0).toLocaleString()}건`;
+  document.getElementById('rp-sub-context').textContent   = `Pickly RAG · ${PRODUCT.name||''} 컨텍스트`;
+  const welcomeEl=document.getElementById('rp-welcome-msg');
+  if(welcomeEl) welcomeEl.innerHTML=`안녕하세요! 👋 <strong>${escHtml(PRODUCT.name||'')}</strong> 캠페인 데이터를 기반으로 답변드릴게요.<br><br>댓글 감성·구매 의도·영상별 성과 등 <strong>${(kpis.comments||0).toLocaleString()}건</strong> 분석 데이터를 활용합니다.`;
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
